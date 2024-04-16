@@ -1,9 +1,6 @@
 package org.example;
 
-import org.example.commands.Add;
-import org.example.commands.Command;
-import org.example.commands.Config;
-import org.example.commands.Init;
+import org.example.commands.*;
 import org.example.utils.RecursiveSearch;
 import org.example.utils.SHA1;
 
@@ -35,6 +32,10 @@ public class Main {
                 case "config":
                     Command config = new Config();
                     config.execute(args);
+                    break;
+                case "commit":
+                    Command commit = new Commit();
+                    commit.execute(args);
                     break;
                 default:
                     System.out.println("Неизвестная команда" + command);
