@@ -1,4 +1,5 @@
 package org.example.commands;
+import org.example.utils.RecursiveSearch;
 import org.example.utils.SHA1;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class Add extends AbstractCommand {
     public void execute(String fileName) {
         Path filePath = Paths.get(fileName).toAbsolutePath().normalize();
 
-        Path repositoryRoot = findRepositoryRoot(filePath);
+        Path repositoryRoot = RecursiveSearch.findRepositoryRoot(filePath);
         if (repositoryRoot == null) {
             System.out.println("Не найден корень репозитория .gitler.");
             return;
@@ -41,16 +42,6 @@ public class Add extends AbstractCommand {
         }
     }
 
-    private Path findRepositoryRoot(Path startPath) {
-        Path current = startPath;
-        while (current != null) {
-            if (Files.exists(current.resolve(".gitler"))) {
-                return current;
-            }
-            current = current.getParent();
-        }
-        return null;
-    }
 
     private void addFile(Path filePath, Path repositoryRoot) {
         try {
