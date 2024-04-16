@@ -20,14 +20,28 @@ public class Commit extends AbstractCommand {
     @Override
     public void execute(String[] commitMessage) throws IOException {
         Path repositoryPath = Paths.get("./");
+        System.out.println(repositoryPath);
         Path indexPath = repositoryPath.resolve(".gitler/index");
         Path objectsPath = repositoryPath.resolve(".gitler/objects");
         List<FileEntry> entries = IndexParser.parseIndex(indexPath);
+        System.out.println(entries);
 
         Map<String, String> trees = TreeBuilder.buildTrees(entries, objectsPath);
+        System.out.println(trees);
 
         String rootTreeHash = trees.get("");
-        String commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage[1];
+        System.out.println(rootTreeHash);
+        String commitContent;
+        if (isFileEmpty(repositoryPath.resolve(".gitler/HEAD"))){
+            commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage[1];
+            System.out.println(1);
+        }else{
+            String ref = Files.readString(Paths.get(repositoryPath.resolve(".gitler/HEAD").toUri()));
+            String parentCommit = Files.readString(Paths.get(repositoryPath.resolve(".gitler/" + ref.split(" ")[1]).toUri()));
+            commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage[1] + "\nparent commit: " + parentCommit;
+            System.out.println(2);
+        }
+
         String commitHash = SHA1.apply(commitContent.getBytes());
 
         String dirName = commitHash.substring(0, 2);
@@ -39,7 +53,7 @@ public class Commit extends AbstractCommand {
         Files.writeString(commitFile, commitContent);
         Path headPath = Paths.get(repositoryPath.resolve(".gitler/HEAD").toUri());
         if (isFileEmpty(headPath)){
-            Files.createFile(repositoryPath.resolve(".gitler/refs/master"));
+            Files.createFile(repositoryPath.resolve(".gitler/refs/heads/master"));
             Files.writeString(repositoryPath.resolve(".gitler/HEAD"), "ref: refs/heads/master");
         }
         String branch = Files.readString(repositoryPath.resolve(".gitler/HEAD"));
