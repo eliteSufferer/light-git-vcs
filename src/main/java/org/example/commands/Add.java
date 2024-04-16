@@ -31,53 +31,50 @@ public class Add extends AbstractCommand {
         }
 
         try (Stream<Path> paths = Files.walk(filePath, FileVisitOption.FOLLOW_LINKS)) {
-            paths.forEach(path -> {
-                if (Files.isRegularFile(path)) {
-                    addFile(path, repositoryRoot);
-                }
-            });
+            paths.filter(Files::isRegularFile)
+                    .forEach(path -> addFile(path, repositoryRoot));
         } catch (IOException e) {
             System.out.println("Ошибка при добавлении: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-
     private void addFile(Path filePath, Path repositoryRoot) {
         try {
-            Path relativePath = repositoryRoot.relativize(filePath);
-            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
-            String fileContent = Files.readString(filePath);
+            byte[] fileContent = Files.readAllBytes(filePath);
             String hashCode = SHA1.apply(fileContent);
-            Path indexPath = repositoryRoot.resolve(".gitler/index");
-            Path objectsPath = repositoryRoot.resolve(".gitler/objects");
 
+            Path indexPath = repositoryRoot.resolve(".gitler/index");
             if (!Files.exists(indexPath)) {
                 Files.createFile(indexPath);
             }
-
+            Path objectsPath = repositoryRoot.resolve(".gitler/objects");
             Path hashDir = objectsPath.resolve(hashCode.substring(0, 2));
-            Files.createDirectories(hashDir);
             Path blobFile = hashDir.resolve(hashCode.substring(2));
+            BasicFileAttributes attrs = Files.readAttributes(filePath, BasicFileAttributes.class);
+
+            Files.createDirectories(hashDir);
 
             if (!Files.exists(blobFile)) {
-                Files.createFile(blobFile);
-                Files.writeString(blobFile, fileContent);
-
-                String indexEntry = String.format("%s %s %d %d %s%n",
-                        relativePath.toString(),
-                        hashCode,
-                        attrs.lastModifiedTime().toMillis(),
-                        attrs.size(),
-                        System.lineSeparator());
-
-                Files.writeString(indexPath, indexEntry, java.nio.file.StandardOpenOption.APPEND);
-                System.out.println("Файл " + relativePath + " добавлен в индекс.");
+                Files.write(blobFile, fileContent);
+                Files.writeString(indexPath, formatIndexEntry(filePath, repositoryRoot, hashCode, attrs), java.nio.file.StandardOpenOption.APPEND);
+                System.out.println("Файл " + filePath.getFileName() + " добавлен в индекс.");
             } else {
-                System.out.println("Файл " + relativePath + " уже существует в objects.");
+                System.out.println("Файл " + filePath.getFileName() + " уже существует в objects.");
             }
         } catch (IOException e) {
             System.out.println("Ошибка при добавлении файла " + filePath + ": " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    private String formatIndexEntry(Path filePath, Path repositoryRoot, String hashCode, BasicFileAttributes attrs) {
+        Path relativePath = repositoryRoot.relativize(filePath);
+        return String.format("%s %s %d %d%s",
+                relativePath.toString(),
+                hashCode,
+                attrs.lastModifiedTime().toMillis(),
+                attrs.size(),
+                System.lineSeparator());
     }
 }

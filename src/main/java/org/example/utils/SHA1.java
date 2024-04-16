@@ -4,18 +4,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SHA1 {
-    public static String apply(String text) {
+    public static String apply(byte[] data) {
         try {
-            // Создание экземпляра MessageDigest для SHA-1
             MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] digest = md.digest(data);
 
-            // Обновление данных, которые нужно хешировать
-            md.update(text.getBytes());
-
-            // Вычисление хеша
-            byte[] digest = md.digest();
-
-            // Преобразование байтового массива хеша в строку в шестнадцатеричном формате
             StringBuilder hexString = new StringBuilder();
             for (byte b : digest) {
                 String hex = Integer.toHexString(0xFF & b);
@@ -26,9 +19,8 @@ public class SHA1 {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            // Обработка исключения, если алгоритм SHA-1 не поддерживается
             System.err.println("SHA-1 algorithm not found.");
+            return "";
         }
-        return "";
     }
 }

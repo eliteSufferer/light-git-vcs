@@ -25,8 +25,7 @@ public class Main {
         Command init = new Init();
         Command add = new Add();
         init.execute("ebbebe");
-        add.execute("ggg/bebebe");
-        add.execute("gugu");
+        add.execute(".");
     }
 
 
