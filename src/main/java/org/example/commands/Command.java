@@ -7,5 +7,5 @@ public interface Command {
 
     String getName();
 
-    public void execute(String commandArgument) throws IOException;
+    public void execute(String[] commandArgument) throws IOException;
 }

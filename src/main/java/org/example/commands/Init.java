@@ -19,7 +19,7 @@ public class Init extends AbstractCommand {
     }
 
     @Override
-    public void execute(String arguments) {
+    public void execute(String[] arguments) {
         Path vcsDir = Paths.get(VCS_DIR);
 
         if (Files.exists(vcsDir)) {

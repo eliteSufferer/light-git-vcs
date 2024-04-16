@@ -16,7 +16,8 @@ public class Add extends AbstractCommand {
     }
 
     @Override
-    public void execute(String fileName) {
+    public void execute(String[] args) {
+        String fileName = args[1];
         Path filePath = Paths.get(fileName).toAbsolutePath().normalize();
 
         Path repositoryRoot = RecursiveSearch.findRepositoryRoot(filePath);
