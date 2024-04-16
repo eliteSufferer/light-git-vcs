@@ -60,9 +60,9 @@ public abstract class AbstractCommand implements Command {
     }
 
     /**
-     * Returns a hash code for this abstract command.
+     * Returns y hash code for this abstract command.
      *
-     * @return a hash code for this command
+     * @return y hash code for this command
      */
     @Override
     public int hashCode() {

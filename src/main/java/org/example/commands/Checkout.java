@@ -61,6 +61,27 @@ public class Checkout extends AbstractCommand{
         }
     }
 
+    private static void restoreWorkingDir(Path root, File start) throws IOException {
+        Path currentPath = Paths.get(start.getAbsolutePath());
+        Path globalPath = root;
+        while (Files.exists(currentPath)){
+            File node = new File(String.valueOf(currentPath));
+            File currentFile = Objects.requireNonNull(node.listFiles())[0];
+            List<String> lines = readLinesFromFile(currentFile.getPath());
+
+            for (String line : lines){
+                Path newPath = Path.of(globalPath + "/" + line.split(" ")[2]);
+                if (line.split(" ")[0].equals("tree")){
+                    Files.createDirectory(newPath);
+                } else if (line.split(" ")[0].equals("blob")){
+                    Files.createFile(newPath);
+                }
+            }
+
+
+        }
+    }
+
     private static void checkoutBranch(String branchName) {
         File branchFile = new File(Constants.REFS_DIR + "/heads/" + branchName);
         if (!branchFile.exists()) {
@@ -79,14 +100,21 @@ public class Checkout extends AbstractCommand{
 
             // Обновление рабочей директории в соответствии с состоянием коммита
 
-            File treeDir = new File(Constants.OBJECTS_DIR + "/" + dirName(commitHash));
-            File treeFile = Objects.requireNonNull(treeDir.listFiles())[0];
-            String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1];
+            File treeDir = new File(Constants.OBJECTS_DIR + "/" + dirName(commitHash)); //19
+            File treeFile = Objects.requireNonNull(treeDir.listFiles())[0]; //9b...
+            String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1]; //561d01862b8daf7d31019d89f97ee61ee119259e
 
+            File startMainDir = new File(Constants.OBJECTS_DIR + "/" + dirName(treeRootHash));
             Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
 
             assert repositoryRoot != null;
             clearWorkingDir(repositoryRoot);
+
+            System.out.println(repositoryRoot);
+
+            restoreWorkingDir(Path.of("/repo"), startMainDir);
+
+
 
 
             System.out.println("Переключено на ветку " + branchName);
