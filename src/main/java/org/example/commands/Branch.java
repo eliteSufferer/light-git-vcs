@@ -14,11 +14,11 @@ public class Branch extends AbstractCommand {
     }
 
     @Override
-    public void execute(String[] args) {
-        if (args.length == 1) {
+    public void execute(String[] commandArgument) {
+        if (commandArgument.length == 1) {
             listBranches();
-        } else if (args.length == 2) {
-            String branchName = args[1];
+        } else if (commandArgument.length == 2) {
+            String branchName = commandArgument[1];
             createBranch(branchName);
         } else {
             System.out.println("Использование: branch [<имя_ветки>]");

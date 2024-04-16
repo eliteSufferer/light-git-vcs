@@ -39,6 +39,10 @@ public class Main {
                     Command branch = new Branch();
                     branch.execute(args);
                     break;
+                case "checkout":
+                    Command checkout = new Checkout();
+                    checkout.execute(args);
+                    break;
                 default:
                     System.out.println("Неизвестная команда" + command);
                     break;
