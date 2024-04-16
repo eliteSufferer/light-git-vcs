@@ -9,6 +9,7 @@ target/
 .idea/compiler.xml
 .idea/libraries/
 .gitler
+repo
 *.iws
 *.iml
 *.ipr

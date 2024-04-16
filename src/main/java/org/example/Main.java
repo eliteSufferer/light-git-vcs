@@ -9,8 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) throws IOException {
         if (args.length > 0) {
@@ -36,6 +34,10 @@ public class Main {
                 case "commit":
                     Command commit = new Commit();
                     commit.execute(args);
+                    break;
+                case "branch":
+                    Command branch = new Branch();
+                    branch.execute(args);
                     break;
                 default:
                     System.out.println("Неизвестная команда" + command);

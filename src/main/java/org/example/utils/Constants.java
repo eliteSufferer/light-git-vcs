@@ -7,5 +7,4 @@ public class Constants {
     public static final String HEAD_FILE = VCS_DIR + "/HEAD";
     public static final String CONFIG_FILE = VCS_DIR + "/config";
     public static final String INDEX_FILE = VCS_DIR + "/index";
-    // Добавьте другие константы путей файлов по мере необходимости
 }

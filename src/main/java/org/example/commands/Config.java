@@ -46,7 +46,6 @@ public class Config extends AbstractCommand{
         Properties properties = new Properties();
 
         try {
-            // Загрузка настроек из файла config
             FileInputStream inputStream = new FileInputStream(Constants.CONFIG_FILE);
             properties.load(inputStream);
             inputStream.close();
