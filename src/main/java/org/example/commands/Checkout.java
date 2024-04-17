@@ -61,24 +61,43 @@ public class Checkout extends AbstractCommand{
         }
     }
 
+    public static void copyFiles(File source, File dist){
+        try {
+            Path sourcePath = source.toPath();
+            Path distPath = dist.toPath();
+
+            byte[] content = Files.readAllBytes(sourcePath);
+
+            Files.write(distPath, content);
+
+            System.out.println("Содержимое файла " + source + " успешно восстановлено");
+        } catch (IOException e) {
+            System.out.println("Ошибка при копировании файлов: " + e.getMessage());
+        }
+    }
+
     private static void restoreWorkingDir(Path root, File start) throws IOException {
-        Path currentPath = Paths.get(start.getAbsolutePath());
-        Path globalPath = root;
-        while (Files.exists(currentPath)){
-            File node = new File(String.valueOf(currentPath));
-            File currentFile = Objects.requireNonNull(node.listFiles())[0];
-            List<String> lines = readLinesFromFile(currentFile.getPath());
+        File base = new File(String.valueOf(start));
+        File currentFile = Objects.requireNonNull(base.listFiles())[0];
+        List<String> lines = readLinesFromFile(currentFile.getPath());
 
-            for (String line : lines){
-                Path newPath = Path.of(globalPath + "/" + line.split(" ")[2]);
-                if (line.split(" ")[0].equals("tree")){
-                    Files.createDirectory(newPath);
-                } else if (line.split(" ")[0].equals("blob")){
-                    Files.createFile(newPath);
-                }
+        for (String line : lines) {
+            String[] parts = line.split(" ");
+            String type = parts[0];
+            String hash = parts[1];
+            String name = parts[2];
+            Path newPath = Path.of(root + "/" + name);
+
+            if (type.equals("tree")) {
+                Files.createDirectory(newPath);
+                File subDir = new File(Constants.OBJECTS_DIR + "/" + dirName(hash));
+                restoreWorkingDir(newPath, subDir);
+            } else if (type.equals("blob")) {
+                File newNode = Files.createFile(newPath).toFile();
+                base = new File(Constants.OBJECTS_DIR + "/" + dirName(hash));
+                currentFile = Objects.requireNonNull(base.listFiles())[0];
+                copyFiles(currentFile, newNode);
             }
-
-
         }
     }
 
@@ -100,11 +119,13 @@ public class Checkout extends AbstractCommand{
 
             // Обновление рабочей директории в соответствии с состоянием коммита
 
-            File treeDir = new File(Constants.OBJECTS_DIR + "/" + dirName(commitHash)); //19
+            File treeDir = new File(Constants.OBJECTS_DIR + "/" + dirName(commitHash));
             File treeFile = Objects.requireNonNull(treeDir.listFiles())[0]; //9b...
-            String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1]; //561d01862b8daf7d31019d89f97ee61ee119259e
+            String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1];
 
             File startMainDir = new File(Constants.OBJECTS_DIR + "/" + dirName(treeRootHash));
+
+            System.out.println(startMainDir);
             Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
 
             assert repositoryRoot != null;
@@ -112,14 +133,14 @@ public class Checkout extends AbstractCommand{
 
             System.out.println(repositoryRoot);
 
-            restoreWorkingDir(Path.of("/repo"), startMainDir);
+            restoreWorkingDir(repositoryRoot, startMainDir);
 
 
 
 
             System.out.println("Переключено на ветку " + branchName);
         } catch (IOException e) {
-            System.out.println("Ошибка при переключении на ветку: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
