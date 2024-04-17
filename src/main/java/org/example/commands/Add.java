@@ -1,4 +1,5 @@
 package org.example.commands;
+import org.example.utils.Constants;
 import org.example.utils.RecursiveSearch;
 import org.example.utils.SHA1;
 
@@ -42,8 +43,10 @@ public class Add extends AbstractCommand {
 
             try (Stream<Path> paths = Files.walk(filePath, FileVisitOption.FOLLOW_LINKS)) {
                 paths.filter(Files::isRegularFile)
+                        .filter(path -> !path.startsWith(repositoryRoot.resolve(".gitler")))  // Добавляем фильтр для игнорирования .gitler
                         .forEach(path -> addFile(path, repositoryRoot));
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 System.out.println("Ошибка при добавлении: " + e.getMessage());
                 e.printStackTrace();
             }

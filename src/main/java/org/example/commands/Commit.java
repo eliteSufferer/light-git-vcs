@@ -1,9 +1,6 @@
 package org.example.commands;
 
-import org.example.utils.FileEntry;
-import org.example.utils.IndexParser;
-import org.example.utils.SHA1;
-import org.example.utils.TreeBuilder;
+import org.example.utils.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +16,7 @@ public class Commit extends AbstractCommand {
 
     @Override
     public void execute(String[] commitMessage) throws IOException {
-        Path repositoryPath = Paths.get("./");
+        Path repositoryPath = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
         System.out.println(repositoryPath);
         Path indexPath = repositoryPath.resolve(".gitler/index");
         Path objectsPath = repositoryPath.resolve(".gitler/objects");

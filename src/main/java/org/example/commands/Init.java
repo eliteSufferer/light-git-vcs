@@ -1,18 +1,12 @@
 package org.example.commands;
+import org.example.utils.Constants;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Init extends AbstractCommand {
-    private static final String VCS_DIR = ".gitler";
-    private static final String OBJECTS_DIR = "objects";
-    private static final String REFS_DIR = "refs";
-    private static final String HEAD_FILE = "HEAD";
-    private static final String CONFIG_FILE = "config";
-    private static final String HOOKS = "hooks";
-    private static final String INFO = "info";
-    private static final String DESCRIPTION = "description";
 
     public Init() {
         super("init", "Инициализация репозитория gitler)))");
@@ -20,7 +14,7 @@ public class Init extends AbstractCommand {
 
     @Override
     public void execute(String[] arguments) {
-        Path vcsDir = Paths.get(VCS_DIR);
+        Path vcsDir = Paths.get(Constants.VCS_DIR);
 
         if (Files.exists(vcsDir)) {
             System.out.println("Репозиторий уже инициализирован.");
@@ -30,20 +24,23 @@ public class Init extends AbstractCommand {
         try {
             Files.createDirectory(vcsDir);
 
-            Path objectsDir = Files.createDirectories(vcsDir.resolve(OBJECTS_DIR));
-            Files.createDirectories(objectsDir.resolve("info"));
-            Files.createDirectories(objectsDir.resolve("pack"));
+            Files.createDirectories(Paths.get(Constants.OBJECTS_DIR));
+            Files.createDirectories(Paths.get(Constants.PACK));
+            Files.createDirectories(Paths.get(Constants.OBJECTS_INFO));
 
-            Path refsDir = Files.createDirectories(vcsDir.resolve(REFS_DIR));
-            Files.createDirectories(refsDir.resolve("heads"));
-            Files.createDirectories(refsDir.resolve("tags"));
+            Files.createDirectories(Paths.get(Constants.REFS_DIR));
+            Files.createDirectories(Paths.get(Constants.REFS_HEADS));
+            Files.createDirectories(Paths.get(Constants.REFS_TAGS));
 
-            Files.createDirectory(vcsDir.resolve(HOOKS));
-            Files.createDirectory(vcsDir.resolve(INFO));
+            Files.createDirectory(Paths.get(Constants.HOOKS));
 
-            Files.createFile(vcsDir.resolve(HEAD_FILE));
-            Files.createFile(vcsDir.resolve(DESCRIPTION));
-            Files.createFile(vcsDir.resolve(CONFIG_FILE));
+            Files.createDirectory(Paths.get(Constants.VCS_DIR_INFO));
+
+
+
+            Files.createFile(Paths.get(Constants.HEAD_FILE));
+            Files.createFile(Paths.get(Constants.DESCRIPTION));
+            Files.createFile(Paths.get(Constants.CONFIG_FILE));
 
             System.out.println("Репозиторий инициализирован.");
         } catch (IOException e) {

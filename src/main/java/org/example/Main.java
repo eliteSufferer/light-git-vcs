@@ -37,6 +37,10 @@ public class Main {
                     Command commit = new Commit();
                     commit.execute(args);
                     break;
+                case "status":
+                    Command status = new Status();
+                    status.execute(args);
+                    break;
                 default:
                     System.out.println("Неизвестная команда" + command);
                     break;
