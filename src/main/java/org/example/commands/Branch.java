@@ -14,19 +14,23 @@ public class Branch extends AbstractCommand {
     }
 
     @Override
-    public void execute(String[] commandArgument) {
+    public void execute(String[] commandArgument) throws IOException {
         if (commandArgument.length == 1) {
             listBranches();
         } else if (commandArgument.length == 2) {
             String branchName = commandArgument[1];
             createBranch(branchName);
-        } else {
+        } else if (commandArgument[1].equals("-d")){
+            String branchName = commandArgument[2];
+            deleteBranch(branchName);
+        }
+        else {
             System.out.println("Использование: branch [<имя_ветки>]");
         }
     }
 
     private static void listBranches() {
-        File branchesDir = new File(Constants.REFS_DIR + "/heads");
+        File branchesDir = new File(Constants.REFS_HEADS);
         String[] branches = branchesDir.list();
         if (branches != null) {
             for (String branch : branches) {
@@ -36,7 +40,7 @@ public class Branch extends AbstractCommand {
     }
 
     private static void createBranch(String branchName) {
-        File branchFile = new File(Constants.REFS_DIR + "/heads/" + branchName);
+        File branchFile = new File(Constants.REFS_HEADS + branchName);
         if (branchFile.exists()) {
             System.out.println("Ветка " + branchName + " уже существует.");
             return;
@@ -53,13 +57,24 @@ public class Branch extends AbstractCommand {
         }
     }
 
+    private static void deleteBranch(String branchName) throws IOException {
+        File branchFile = new File(Constants.REFS_HEADS + branchName);
+        if (!branchFile.exists()) {
+            System.out.println("Ветка " + branchName + " и так не существует.");
+            return;
+        }
+
+        Files.delete(branchFile.toPath());
+
+    }
+
     public static String getCurrentBranchPath() {
         try {
             String content = new String(Files.readAllBytes(Paths.get(Constants.HEAD_FILE)));
 
             if (content.startsWith("ref: ")) {
                 String refPath = content.split(" ")[1];
-                return Constants.VCS_DIR + "/" + refPath;
+                return Constants.VCS_DIR + refPath;
             } else {
                 return null;
             }
