@@ -4,6 +4,7 @@ import org.example.utils.Constants;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
@@ -23,6 +24,10 @@ public class Branch extends AbstractCommand {
         } else if (commandArgument[1].equals("-d")){
             String branchName = commandArgument[2];
             deleteBranch(branchName);
+        } else if (commandArgument[1].equals("-m")){
+            String oldBranchName = commandArgument[2];
+            String newBranchName = commandArgument[3];
+            renameBranch(oldBranchName, newBranchName);
         }
         else {
             System.out.println("Использование: branch [<имя_ветки>]");
@@ -34,8 +39,7 @@ public class Branch extends AbstractCommand {
         String[] branches = branchesDir.list();
         if (branches != null) {
             for (String branch : branches) {
-                System.out.println(branch);
-            }
+                System.out.println(Objects.requireNonNull(getCurrentBranchPath()).split("/")[3].equals(branch) ? branch + "*" : branch);            }
         }
     }
 
@@ -64,7 +68,39 @@ public class Branch extends AbstractCommand {
             return;
         }
 
+
+        if (Objects.requireNonNull(getCurrentBranchPath()).split("/")[3].equals(branchName)){
+            System.out.println("Невозможно удалить ветку, вы в ней сидите. Сделайте чекаут и повторите попытку.");
+            return;
+        }
+
         Files.delete(branchFile.toPath());
+        System.out.println("Ветка " + branchName + " была успешно удалена");
+    }
+
+    private static void renameBranch(String oldName, String newName){
+        File branchFile = new File(Constants.REFS_HEADS + oldName);
+        File newBranchFile = new File(Constants.REFS_HEADS + newName);
+        if (!branchFile.exists()) {
+            System.out.println("Ветка " + oldName + " не существует.");
+            return;
+        }
+
+        if (Objects.requireNonNull(getCurrentBranchPath()).split("/")[3].equals(oldName)){
+            String head = "ref: refs/heads/" + newName;
+
+            try{
+                Path headPath = Paths.get(Constants.HEAD_FILE);
+                Files.write(headPath, head.getBytes());
+                System.out.println("НEAD успешно перезаписан");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        branchFile.renameTo(newBranchFile);
+
+        System.out.println("Ветка " + oldName + " успешно переименована на " + newName);
 
     }
 
@@ -80,8 +116,13 @@ public class Branch extends AbstractCommand {
             }
         } catch (IOException e) {
             System.out.println("Ошибка при чтении файла HEAD: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
+    }
+
+    public static String getCurrentBranchName(){
+        return Objects.requireNonNull(getCurrentBranchPath()).split("/")[3];
     }
 
     private static String getCurrentCommit(){

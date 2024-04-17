@@ -105,7 +105,7 @@ public class Checkout extends AbstractCommand{
     }
 
     private static void checkoutBranch(String branchName) {
-        File branchFile = new File(Constants.REFS_DIR + "heads/" + branchName);
+        File branchFile = new File(Constants.REFS_HEADS + branchName);
         if (!branchFile.exists()) {
             System.out.println("Ветка " + branchName + " не существует.");
             return;
