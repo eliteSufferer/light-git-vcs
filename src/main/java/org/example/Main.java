@@ -53,6 +53,9 @@ public class Main {
                     Command tag = new Tag();
                     tag.execute(args);
                     break;
+                case "show":
+                    Command show = new Show();
+                    show.execute(args);
                 default:
                     System.out.println("Неизвестная команда " + command);
                     break;
