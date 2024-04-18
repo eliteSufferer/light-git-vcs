@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CheckoutPossibility {
-    private Map<String, String> fileHashes;
-    public boolean allCommited() {
+    private static Map<String, String> fileHashes;
+    public static boolean allCommited() {
         try {
             Path repositoryRoot = Paths.get(".").toAbsolutePath().normalize(); // Получаем корень репозитория
             Path indexPath = repositoryRoot.resolve(".gitler/index");
@@ -34,7 +34,7 @@ public class CheckoutPossibility {
         }
     }
 
-    private Map<String, String> readIndexEntries(Path indexPath) throws IOException {
+    public static Map<String, String> readIndexEntries(Path indexPath) throws IOException {
         return Files.readAllLines(indexPath).stream()
                 .collect(Collectors.toMap(
                         line -> line.split(" ")[0].replace("\\", "/"),
@@ -43,7 +43,7 @@ public class CheckoutPossibility {
 
     }
 
-    private String getLastCommitHash(Path repositoryRoot) throws IOException {
+    private static String getLastCommitHash(Path repositoryRoot) throws IOException {
         Path headPath = repositoryRoot.resolve(".gitler/HEAD");
         String refContent = Files.readString(headPath).trim();  // Пример: "ref: refs/heads/master"
 
@@ -56,7 +56,7 @@ public class CheckoutPossibility {
 
         return null;
     }
-    private String getTreeHashFromCommit(String commitHash, Path repositoryRoot) throws IOException {
+    private static String getTreeHashFromCommit(String commitHash, Path repositoryRoot) throws IOException {
         Path commitPath = getFilePath(commitHash, repositoryRoot);
         for (String line : Files.readAllLines(commitPath)) {
             if (line.startsWith("tree ")) {
@@ -68,14 +68,14 @@ public class CheckoutPossibility {
 
 
 
-    private Map<String, String> loadCommitTree(String commitHash, Path repositoryRoot) throws IOException {
-        this.fileHashes = new HashMap<>();
+    private static Map<String, String> loadCommitTree(String commitHash, Path repositoryRoot) throws IOException {
+        fileHashes = new HashMap<>();
         String treeHash = getTreeHashFromCommit(commitHash, repositoryRoot);
         loadTree(treeHash, repositoryRoot, "");
         return fileHashes;
     }
 
-    private void loadTree(String treeHash, Path repositoryRoot, String basePath) throws IOException {
+    private static void loadTree(String treeHash, Path repositoryRoot, String basePath) throws IOException {
         Path treePath = getFilePath(treeHash, repositoryRoot);
         if (!Files.exists(treePath)) return;
 
@@ -90,19 +90,25 @@ public class CheckoutPossibility {
         }
     }
 
-    private Path getFilePath(String hash, Path repositoryRoot) {
+    private static Path getFilePath(String hash, Path repositoryRoot) {
         return repositoryRoot.resolve(".gitler/objects").resolve(hash.substring(0, 2)).resolve(hash.substring(2));
     }
 
 
 
-    private boolean checkForChangesToBeCommitted(Map<String, String> indexEntries, Path repositoryRoot) throws IOException {
+    public static boolean checkForChangesToBeCommitted(Map<String, String> indexEntries, Path repositoryRoot) throws IOException {
 //        System.out.println("Changes to be committed:");
         String lastCommitHash = getLastCommitHash(repositoryRoot);
-        if (lastCommitHash == null) {
-//            System.out.println("No commits yet");
+        if (lastCommitHash == null && Files.exists(Paths.get(Constants.INDEX_FILE))) {
+            return false;
+
+        }else if(lastCommitHash == null && !Files.exists(Paths.get(Constants.INDEX_FILE))){
             return true;
         }
+//        if (lastCommitHash == null) {
+//            System.out.println("No commits yet");
+//            return true;
+//        }
         Map<String, String> lastCommitFileHashes = loadCommitTree(lastCommitHash, repositoryRoot);
 
         for (Map.Entry<String, String> indexEntry : indexEntries.entrySet()) {
@@ -128,7 +134,7 @@ public class CheckoutPossibility {
         return true;
     }
 
-    private boolean checkForChangesNotStagedForCommit(Map<String, String> indexEntries, List<Path> workingDirectoryFiles, Path repositoryRoot) throws IOException {
+    public static boolean checkForChangesNotStagedForCommit(Map<String, String> indexEntries, List<Path> workingDirectoryFiles, Path repositoryRoot) throws IOException {
 //        System.out.println("Changes not staged for commit:");
 
         for (Path file : workingDirectoryFiles) {

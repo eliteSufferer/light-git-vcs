@@ -2,6 +2,7 @@ package org.example.utils;
 
 public class Constants {
     public static final String VCS_DIR = ".gitler/";
+    public static final String COMMITS = VCS_DIR + "commits"; //TODO: Засунуть куда надо
     public static final String OBJECTS_DIR = VCS_DIR + "objects/";
     public static final String REFS_DIR = VCS_DIR + "refs/";
     public static final String HEAD_FILE = VCS_DIR + "HEAD";

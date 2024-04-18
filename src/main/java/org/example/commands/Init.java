@@ -25,6 +25,7 @@ public class Init extends AbstractCommand {
             Files.createDirectory(vcsDir);
 
             Files.createDirectories(Paths.get(Constants.OBJECTS_DIR));
+            Files.createFile(Paths.get(Constants.COMMITS));
             Files.createDirectories(Paths.get(Constants.PACK));
             Files.createDirectories(Paths.get(Constants.OBJECTS_INFO));
 
@@ -38,7 +39,7 @@ public class Init extends AbstractCommand {
 
 
 
-            Files.createFile(Paths.get(Constants.HEAD_FILE));
+            Files.writeString(Paths.get(Constants.HEAD_FILE), "ref: refs/heads/master");
             Files.createFile(Paths.get(Constants.DESCRIPTION));
             Files.createFile(Paths.get(Constants.CONFIG_FILE));
 

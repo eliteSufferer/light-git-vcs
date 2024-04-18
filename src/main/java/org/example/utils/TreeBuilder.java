@@ -9,27 +9,40 @@ import java.util.stream.Collectors;
 
 public class TreeBuilder {
     public static Map<String, String> buildTrees(List<FileEntry> entries, Path objectsPath) throws IOException {
-        Map<String, List<FileEntry>> groupedByDirectory = entries.stream()
-                .collect(Collectors.groupingBy(entry -> {
-                    Path p = Paths.get(entry.getPath()).getParent();
-                    return p == null ? "" : p.toString().replace("\\", "/");
-                }));
+        Map<String, List<FileEntry>> groupedByDirectory = new HashMap<>();
 
+        // Заполнение groupedByDirectory, добавляя файлы в их непосредственные директории и учитывая все родительские директории
+        for (FileEntry entry : entries) {
+            Path filePath = Paths.get(entry.getPath());
+            Path parentPath = filePath.getParent();
+            while (parentPath != null) {
+                String directory = parentPath.toString().replace("\\", "/");
+                groupedByDirectory.putIfAbsent(directory, new ArrayList<>());
+                // Добавляем файл только в его непосредственную директорию
+                if (parentPath.equals(filePath.getParent())) {
+                    groupedByDirectory.get(directory).add(entry);
+                }
+                parentPath = parentPath.getParent();
+            }
+        }
 
         // Добавляем корневую директорию, если она отсутствует
         groupedByDirectory.putIfAbsent("", new ArrayList<>());
-        System.out.println(groupedByDirectory);
 
         Map<String, String> directoryHashes = new HashMap<>();
         List<String> sortedDirectories = new ArrayList<>(groupedByDirectory.keySet());
-        sortedDirectories.sort(Comparator.comparingInt(dir -> -dir.length() + dir.replace("/", "").length()));
+        sortedDirectories.sort((a, b) -> b.length() - a.length());  // Сортируем директории по убыванию глубины
         System.out.println(sortedDirectories);
         for (String dir : sortedDirectories) {
+            System.out.println("SEE DIR : " + dir);
             StringBuilder treeContent = new StringBuilder();
+            System.out.println("grop DIR: " + groupedByDirectory.get(dir));
             for (FileEntry file : groupedByDirectory.get(dir)) {
+                System.out.println("file" + file);
                 Path filePath = Paths.get(file.getPath());
                 String fileName = filePath.getFileName().toString();
                 treeContent.append("blob ").append(file.getHash()).append(" ").append(fileName).append("\n");
+                System.out.println("tree Content: " + treeContent);
             }
 
             String treeHash = SHA1.apply(treeContent.toString().getBytes());
@@ -38,10 +51,12 @@ public class TreeBuilder {
             // Сохраняем дерево
             saveTree(treeHash, treeContent.toString(), objectsPath);
         }
+        System.out.println("DHASH: " + directoryHashes);
 
         // Обновляем ссылки на поддиректории
         for (String dir : sortedDirectories) {
-            System.out.println(dir);
+            System.out.println("dirNOW: " + dir);
+            System.out.println(!dir.isEmpty());
             if (!dir.isEmpty()) {
                 Path dirPath = Paths.get(dir);
                 System.out.println("dir: " + dir);
@@ -63,7 +78,7 @@ public class TreeBuilder {
                 }
             }
         }
-
+        System.out.println("DIR GASH: " + directoryHashes);
         return directoryHashes;
     }
 
