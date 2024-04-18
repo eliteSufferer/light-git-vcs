@@ -1,5 +1,6 @@
 package org.example.commands;
 
+import org.example.utils.CheckoutPossibility;
 import org.example.utils.Constants;
 import org.example.utils.RecursiveSearch;
 
@@ -19,7 +20,9 @@ public class Checkout extends AbstractCommand{
 
     @Override
     public void execute(String[] commandArgument) throws IOException {
-        if (commandArgument.length == 2) {
+        if (!CheckoutPossibility.allCommited()) {
+            System.out.println("Есть незакоммиченые изменения, слейте все, потом делайте чекаут");
+        } else if (commandArgument.length == 2) {
             String branchName = commandArgument[1];
             checkoutBranch(branchName);
         } else {
@@ -50,7 +53,7 @@ public class Checkout extends AbstractCommand{
         File[] files = directory.toFile().listFiles();
         if (files != null){
             for (File file : files){
-                if (!file.getName().equals(Constants.VCS_DIR)){
+                if (!file.getName().equals(".gitler")){
                     if (file.isDirectory()){
                         clearWorkingDir(file.toPath());
                     }
@@ -70,7 +73,7 @@ public class Checkout extends AbstractCommand{
 
             Files.write(distPath, content);
 
-            System.out.println("Содержимое файла " + source + " успешно восстановлено");
+            System.out.println("Содержимое файла " + dist + " успешно восстановлено");
         } catch (IOException e) {
             System.out.println("Ошибка при копировании файлов: " + e.getMessage());
         }
@@ -90,11 +93,11 @@ public class Checkout extends AbstractCommand{
 
             if (type.equals("tree")) {
                 Files.createDirectory(newPath);
-                File subDir = new File(Constants.OBJECTS_DIR + "/" + dirName(hash));
+                File subDir = new File(Constants.OBJECTS_DIR + dirName(hash));
                 restoreWorkingDir(newPath, subDir);
             } else if (type.equals("blob")) {
                 File newNode = Files.createFile(newPath).toFile();
-                base = new File(Constants.OBJECTS_DIR + "/" + dirName(hash));
+                base = new File(Constants.OBJECTS_DIR + dirName(hash));
                 currentFile = Objects.requireNonNull(base.listFiles())[0];
                 copyFiles(currentFile, newNode);
             }
@@ -102,7 +105,7 @@ public class Checkout extends AbstractCommand{
     }
 
     private static void checkoutBranch(String branchName) {
-        File branchFile = new File(Constants.REFS_DIR + "/heads/" + branchName);
+        File branchFile = new File(Constants.REFS_HEADS + branchName);
         if (!branchFile.exists()) {
             System.out.println("Ветка " + branchName + " не существует.");
             return;
@@ -119,11 +122,11 @@ public class Checkout extends AbstractCommand{
 
             // Обновление рабочей директории в соответствии с состоянием коммита
 
-            File treeDir = new File(Constants.OBJECTS_DIR + "/" + dirName(commitHash));
+            File treeDir = new File(Constants.OBJECTS_DIR + dirName(commitHash));
             File treeFile = Objects.requireNonNull(treeDir.listFiles())[0]; //9b...
             String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1];
 
-            File startMainDir = new File(Constants.OBJECTS_DIR + "/" + dirName(treeRootHash));
+            File startMainDir = new File(Constants.OBJECTS_DIR + dirName(treeRootHash));
 
             System.out.println(startMainDir);
             Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());

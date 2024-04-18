@@ -49,8 +49,12 @@ public class Main {
                     Command checkout = new Checkout();
                     checkout.execute(args);
                     break;
+                case "tag":
+                    Command tag = new Tag();
+                    tag.execute(args);
+                    break;
                 default:
-                    System.out.println("Неизвестная команда" + command);
+                    System.out.println("Неизвестная команда " + command);
                     break;
             }
         } else {

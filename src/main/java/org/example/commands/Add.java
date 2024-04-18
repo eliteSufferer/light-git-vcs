@@ -54,7 +54,7 @@ public class Add extends AbstractCommand {
 
 
         if (args.length < 2) {
-            System.out.println("Нет файлов для добавления."); // Важно для избежания ошибок при отсутствии аргументов
+            System.out.println("Нет файлов для добавления.");
             return;
         }
 
