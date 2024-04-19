@@ -14,8 +14,18 @@ public class CommitEntity implements Serializable {
     private List<String> filesHashes;
     private String message;
     private Date timestamp;
+    private String commitHash;
 
-    public CommitEntity(String treeHash, String parentCommitHash, List<String> filesHashes, String message, Date timestamp) {
+    public String getCommitHash() {
+        return commitHash;
+    }
+
+    public void setCommitHash(String commitHash) {
+        this.commitHash = commitHash;
+    }
+
+    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, List<String> filesHashes, String message, Date timestamp) {
+        this.commitHash = commitHash;
         this.treeHash = treeHash;
         this.parents = parentCommitHash;
         this.filesHashes = filesHashes;
@@ -66,6 +76,7 @@ public class CommitEntity implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("CommitEntity {");
+        sb.append("\n commit hash ").append(commitHash).append(",");
         sb.append("\n  treeHash: '").append(treeHash).append("',");
         sb.append("\n  parents: '").append(parents).append("',");
         sb.append("\n  fileHashes: {");

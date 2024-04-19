@@ -129,6 +129,7 @@ public class Commit extends AbstractCommand {
         }
 
         CommitEntity newCommit = new CommitEntity(
+                commitHash,
                 rootTreeHash,
                 ojbParentCommits,
                 filesHashes,
