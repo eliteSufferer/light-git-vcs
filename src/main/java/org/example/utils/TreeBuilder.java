@@ -15,6 +15,10 @@ public class TreeBuilder {
         for (FileEntry entry : entries) {
             Path filePath = Paths.get(entry.getPath());
             Path parentPath = filePath.getParent();
+            if (parentPath == null){
+                groupedByDirectory.putIfAbsent("", new ArrayList<>());
+                groupedByDirectory.get("").add(entry);
+            }
             while (parentPath != null) {
                 String directory = parentPath.toString().replace("\\", "/");
                 groupedByDirectory.putIfAbsent(directory, new ArrayList<>());

@@ -43,6 +43,7 @@ public class Commit extends AbstractCommand {
 
 
         Map<String, String> indexEntries = CheckoutPossibility.readIndexEntries(indexPath);
+        System.out.println("inf enties: " + indexEntries);
         List<Path> workingDirectoryFiles = Files.walk(repositoryPath)
                 .filter(Files::isRegularFile)
                 .collect(Collectors.toList());

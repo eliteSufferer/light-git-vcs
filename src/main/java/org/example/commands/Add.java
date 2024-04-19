@@ -25,7 +25,7 @@ public class Add extends AbstractCommand {
     }
 
     @Override
-    public void execute(String[] args) {
+    public void execute(String[] args) throws IOException {
         Map<Boolean, Map<String, Object>> parsedData = FlagParser.parseFlags(options, args);
         Boolean key = parsedData.keySet().iterator().next();
         if (!key) {
@@ -66,10 +66,10 @@ public class Add extends AbstractCommand {
 
         // Обработка всех аргументов начиная с args[1]
         if (flagsMap.containsKey("--all") || flagsMap.containsKey("-A")) {
-            filerFilesToAdd(repositoryRoot, ignorePatterns, repositoryRoot);
+            filerFilesToAdd(Files.walk(repositoryRoot, FileVisitOption.FOLLOW_LINKS).toList(), ignorePatterns, repositoryRoot);
             return;
         }
-
+        List<Path> filePaths = new ArrayList<>();
         for (int i = 0; i < argPaths.size(); i++) {
             Path filePath = Paths.get(argPaths.get(i)).toAbsolutePath().normalize();
             if (!Files.exists(filePath)) {
@@ -77,20 +77,28 @@ public class Add extends AbstractCommand {
                 System.out.println("Файл или директория " + filePath + " не найдена.");
                 continue;
             }
+            try (Stream<Path> paths = Files.walk(filePath, FileVisitOption.FOLLOW_LINKS)) {
+                filePaths.addAll(paths.toList());
 
-            filerFilesToAdd(filePath, ignorePatterns, repositoryRoot);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
         }
+        filerFilesToAdd(filePaths, ignorePatterns, repositoryRoot);
+
     }
 
-    private void filerFilesToAdd(Path directoryPath, List<String> ignorePatterns, Path repositoryRoot) {
-        try (Stream<Path> paths = Files.walk(directoryPath, FileVisitOption.FOLLOW_LINKS)) {
-            Set<Path> existingFiles = paths.filter(Files::isRegularFile)
+    private void filerFilesToAdd(List<Path> directoryPaths, List<String> ignorePatterns, Path repositoryRoot) {
+        try {
+//            System.out.println("papa: " + papa);
+            Set<Path> existingFiles = directoryPaths.stream().filter(Files::isRegularFile)
                     .filter(path -> !shouldIgnore(path, ignorePatterns, repositoryRoot))
                     .filter(path -> !path.startsWith(repositoryRoot.resolve(".gitler")))
                     .collect(Collectors.toSet());
-
+            System.out.println("ES: " + existingFiles);
             // Получаем все пути из индекса
             Map<String, String> indexEntries = readIndexEntries(repositoryRoot.resolve(".gitler/index"));
+            System.out.println("INDEX entries:"  + indexEntries);
             Set<Path> indexedPaths = indexEntries.keySet().stream()
                     .map(pathStr -> repositoryRoot.resolve(pathStr))
                     .collect(Collectors.toSet());
@@ -99,6 +107,9 @@ public class Add extends AbstractCommand {
             existingFiles.forEach(file -> addFile(file, repositoryRoot));
 
             // Проверяем удаленные файлы
+            System.out.println("ppppp");
+            System.out.println(existingFiles);
+            System.out.println(indexedPaths);
             indexedPaths.stream()
                     .filter(path -> !existingFiles.contains(path))
                     .forEach(path -> {
