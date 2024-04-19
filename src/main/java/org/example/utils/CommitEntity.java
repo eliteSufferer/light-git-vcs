@@ -15,6 +15,7 @@ public class CommitEntity implements Serializable {
     private String message;
     private Date timestamp;
     private String commitHash;
+    private String author;
 
     public String getCommitHash() {
         return commitHash;
@@ -24,13 +25,22 @@ public class CommitEntity implements Serializable {
         this.commitHash = commitHash;
     }
 
-    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, List<String> filesHashes, String message, Date timestamp) {
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, List<String> filesHashes, String message, Date timestamp, String author) {
         this.commitHash = commitHash;
         this.treeHash = treeHash;
         this.parents = parentCommitHash;
         this.filesHashes = filesHashes;
         this.message = message;
         this.timestamp = timestamp;
+        this.author = author;
     }
 
     public String getTreeHash() {
@@ -86,6 +96,7 @@ public class CommitEntity implements Serializable {
         sb.append("\n  },");
         sb.append("\n  message: '").append(message).append("',");
         sb.append("\n  timestamp: '").append(timestamp).append("'");
+        sb.append("\n  author: '").append(author).append("'");
         sb.append("\n}");
         return sb.toString();
     }

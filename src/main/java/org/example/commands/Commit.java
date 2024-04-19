@@ -134,7 +134,8 @@ public class Commit extends AbstractCommand {
                 ojbParentCommits,
                 filesHashes,
                 commitMessage,
-                commitDate
+                commitDate,
+                Config.getUsername()
         );
         Map<String, CommitEntity> commits;
         // Сериализация и десериализация коммитов
