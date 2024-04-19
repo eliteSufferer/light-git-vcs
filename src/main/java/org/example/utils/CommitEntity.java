@@ -11,7 +11,7 @@ public class CommitEntity implements Serializable {
 
     private String treeHash;
     private String parents;
-    private List<String> filesHashes;
+    private Map<String, String> filesHashes;
     private String message;
     private Date timestamp;
     private String commitHash;
@@ -33,7 +33,7 @@ public class CommitEntity implements Serializable {
         this.author = author;
     }
 
-    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, List<String> filesHashes, String message, Date timestamp, String author) {
+    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, Map<String, String> filesHashes, String message, Date timestamp, String author) {
         this.commitHash = commitHash;
         this.treeHash = treeHash;
         this.parents = parentCommitHash;
@@ -59,11 +59,11 @@ public class CommitEntity implements Serializable {
         this.parents = parents;
     }
 
-    public List<String> getFilesHashes() {
+    public Map<String, String> getFilesHashes() {
         return filesHashes;
     }
 
-    public void setFilesHashes(List<String> fileHashes) {
+    public void setFilesHashes(Map<String, String> fileHashes) {
         this.filesHashes = fileHashes;
     }
 
@@ -89,10 +89,7 @@ public class CommitEntity implements Serializable {
         sb.append("\n commit hash ").append(commitHash).append(",");
         sb.append("\n  treeHash: '").append(treeHash).append("',");
         sb.append("\n  parents: '").append(parents).append("',");
-        sb.append("\n  fileHashes: {");
-        if (filesHashes != null) {
-            filesHashes.forEach((str) -> sb.append("\n    ").append(str));
-        }
+        sb.append("\n  fileHashes: ").append(filesHashes.keySet());
         sb.append("\n  },");
         sb.append("\n  message: '").append(message).append("',");
         sb.append("\n  timestamp: '").append(timestamp).append("'");

@@ -71,9 +71,9 @@ public class Commit extends AbstractCommand {
 
         for (Map.Entry<String, String> entry : trees.entrySet()){
             String objectHash = entry.getValue();
-            for(String line : Files.readAllLines(Paths.get(Constants.OBJECTS_DIR + objectHash.substring(0, 2) + "/" + objectHash.substring(2)))){
-                filesHashes.add(line.split(" ")[1]);
-            }
+//            for(String line : Files.readAllLines(Paths.get(Constants.OBJECTS_DIR + objectHash.substring(0, 2) + "/" + objectHash.substring(2)))){
+//                filesHashes.put(line.split(" ")[1]);
+//            }
         }
 //        System.out.println(trees);
 
@@ -132,7 +132,7 @@ public class Commit extends AbstractCommand {
                 commitHash,
                 rootTreeHash,
                 ojbParentCommits,
-                filesHashes,
+                trees,
                 commitMessage,
                 commitDate,
                 Config.getUsername()
