@@ -123,7 +123,7 @@ public class Checkout extends AbstractCommand{
             // Обновление рабочей директории в соответствии с состоянием коммита
 
             File treeDir = new File(Constants.OBJECTS_DIR + dirName(commitHash));
-            File treeFile = Objects.requireNonNull(treeDir.listFiles())[0]; //9b...
+            File treeFile = Objects.requireNonNull(treeDir.listFiles())[0];
             String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1];
 
             File startMainDir = new File(Constants.OBJECTS_DIR + dirName(treeRootHash));
@@ -137,9 +137,6 @@ public class Checkout extends AbstractCommand{
             System.out.println(repositoryRoot);
 
             restoreWorkingDir(repositoryRoot, startMainDir);
-
-
-
 
             System.out.println("Переключено на ветку " + branchName);
         } catch (IOException e) {

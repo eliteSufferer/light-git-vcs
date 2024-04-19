@@ -56,6 +56,7 @@ public class Main {
                 case "show":
                     Command show = new Show();
                     show.execute(args);
+                    break;
                 default:
                     System.out.println("Неизвестная команда " + command);
                     break;
