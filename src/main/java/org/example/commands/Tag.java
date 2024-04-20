@@ -37,14 +37,16 @@ public class Tag extends AbstractCommand{
             }
 
             if (commandArgument.length == 5 && commandArgument[1].equals("-a") && commandArgument[3].equals("-m")){
-                if (!createTag(commandArgument[2], commitHash)){
-                    System.out.println("Новый объект тега не будет создан");
-                    return;
-                }
+
 
                 String tagContent = "Author: " + Config.getUsername() + "\nDate: " + DateFormatter.formDate() + "\nMessage: " + commandArgument[4];
 
                 String tagObjectHash = SHA1.apply(tagContent.getBytes());
+
+                if (!createTag("annotated", commandArgument[2], commitHash, tagObjectHash)){
+                    System.out.println("Новый объект тега не будет создан");
+                    return;
+                }
 
                 System.out.println(tagObjectHash);
 
@@ -79,10 +81,9 @@ public class Tag extends AbstractCommand{
 
 
             } else {
-                createTag(commandArgument[1], commitHash);
+                createTag("lightweight", commandArgument[1], commitHash, "");
 
             }
-
 
         }
 
@@ -101,7 +102,7 @@ public class Tag extends AbstractCommand{
     }
 
 
-    private static boolean createTag(String tagName, String commitHash){
+    private static boolean createTag(String type, String tagName, String commitHash, String tagObjectHash){
         File tagFile = new File(Constants.REFS_TAGS + tagName);
 
         if (tagFile.exists()) {
@@ -110,8 +111,12 @@ public class Tag extends AbstractCommand{
         }
 
         try (FileWriter writer = new FileWriter(tagFile)) {
-            writer.write(commitHash);
-            System.out.println("Тег " + tagName + " создан и указывает на коммит " + commitHash);
+            if (tagObjectHash.isEmpty()){
+                writer.write(type + " " + commitHash);
+            } else {
+                writer.write(type + " " + commitHash + " " + tagObjectHash);
+            }
+            System.out.println("Тег " + tagName + " создан и указывает на объект с хэшем " + commitHash);
             return true;
         } catch (IOException e){
             System.out.println(e.getMessage());

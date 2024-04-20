@@ -89,7 +89,7 @@ public class CommitEntity implements Serializable {
         sb.append("\n commit hash ").append(commitHash).append(",");
         sb.append("\n  treeHash: '").append(treeHash).append("',");
         sb.append("\n  parents: '").append(parents).append("',");
-        sb.append("\n  fileHashes: ").append(filesHashes.keySet());
+        sb.append("\n  fileHashes: ").append(filesHashes);
         sb.append("\n  },");
         sb.append("\n  message: '").append(message).append("',");
         sb.append("\n  timestamp: '").append(timestamp).append("'");
