@@ -66,9 +66,13 @@ public class Commit extends AbstractCommand {
         }
 
         Map<String, Map<String, String>> buildResultTree = TreeBuilder.buildTrees(entries, objectsPath);
+
         Map<String, String> trees = buildResultTree.get("dir-hashes");
-        Map<String, String> filesHashes = buildResultTree.get("all-hashes");
-        System.out.println(filesHashes.keySet());
+        Map<String, String> blobHashes = buildResultTree.get("blob-hashes");
+        Map<String, String> allHashes = new HashMap<>();
+        allHashes.putAll(trees);
+
+//                System.out.println(filesHashes.keySet());
 //        for (Map.Entry<String, String> entry : trees.entrySet()){
 //            System.out.println("ENT: " + entry);
 //            String objectHash = entry.getValue();
@@ -133,10 +137,13 @@ public class Commit extends AbstractCommand {
                 commitHash,
                 rootTreeHash,
                 ojbParentCommits,
-                filesHashes,
+                allHashes,
                 commitMessage,
                 commitDate,
-                Config.getUsername()
+                Config.getUsername(),
+                blobHashes
+
+
         );
         Map<String, CommitEntity> commits;
         // Сериализация и десериализация коммитов

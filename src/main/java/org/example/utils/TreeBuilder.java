@@ -77,7 +77,7 @@ public class TreeBuilder {
                     parentTreeContent += "tree " + treeHash + " " + dirName + "\n";
                     String updatedParentTreeHash = SHA1.apply(parentTreeContent.getBytes());
                     directoryHashes.put(parentDir, updatedParentTreeHash);
-                    allHashes.put(parentDir.replace("\\", "/"), updatedParentTreeHash);
+//                    allHashes.put(parentDir.replace("\\", "/"), updatedParentTreeHash);
                     // Сохраняем обновленное дерево
                     saveTree(updatedParentTreeHash, parentTreeContent, objectsPath);
                 }
@@ -86,7 +86,7 @@ public class TreeBuilder {
         System.out.println("DIR GASH: " + directoryHashes);
         Map<String, Map<String, String>> response = new HashMap<>();
         response.put("dir-hashes", directoryHashes);
-        response.put("all-hashes", allHashes);
+        response.put("blob-hashes", allHashes);
         return response;
     }
 
