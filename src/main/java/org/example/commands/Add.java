@@ -204,7 +204,7 @@ public class Add extends AbstractCommand {
     private String formatIndexEntry(Path filePath, Path repositoryRoot, String hashCode, BasicFileAttributes attrs) {
         Path relativePath = repositoryRoot.relativize(filePath);
         return String.format("%s %s %d %d%s",
-                relativePath.toString(),
+                relativePath,
                 hashCode,
                 attrs.lastModifiedTime().toMillis(),
                 attrs.size(),

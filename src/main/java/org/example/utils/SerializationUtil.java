@@ -6,7 +6,7 @@ public class SerializationUtil {
 
     // Метод для сериализации объекта и записи его в файл
     public static void serialize(Object obj, String filePath) {
-        System.out.println("COMMIT PATH: " + filePath);
+//        System.out.println("COMMIT PATH: " + filePath);
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
             oos.writeObject(obj);
         } catch (IOException e) {
@@ -17,7 +17,7 @@ public class SerializationUtil {
 
     // Метод для десериализации объекта из файла
     public static <T> T deserialize(String filePath) {
-        System.out.println("COMMIT PATH: " + filePath);
+//        System.out.println("COMMIT PATH: " + filePath);
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
             return (T) ois.readObject();
         } catch (FileNotFoundException e) {
