@@ -43,7 +43,7 @@ public class CheckoutPossibility {
 
     }
 
-    private static String getLastCommitHash(Path repositoryRoot) throws IOException {
+    public static String getLastCommitHash(Path repositoryRoot) throws IOException {
         Path headPath = repositoryRoot.resolve(".gitler/HEAD");
         String refContent = Files.readString(headPath).trim();  // Пример: "ref: refs/heads/master"
 

@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TreeBuilder {
-    public static Map<String, String> buildTrees(List<FileEntry> entries, Path objectsPath) throws IOException {
+    public static Map<String, Map<String, String>>  buildTrees(List<FileEntry> entries, Path objectsPath) throws IOException {
         Map<String, List<FileEntry>> groupedByDirectory = new HashMap<>();
 
         // Заполнение groupedByDirectory, добавляя файлы в их непосредственные директории и учитывая все родительские директории
@@ -32,7 +32,7 @@ public class TreeBuilder {
 
         // Добавляем корневую директорию, если она отсутствует
         groupedByDirectory.putIfAbsent("", new ArrayList<>());
-
+        Map<String, String> allHashes = new HashMap<>();
         Map<String, String> directoryHashes = new HashMap<>();
         List<String> sortedDirectories = new ArrayList<>(groupedByDirectory.keySet());
         sortedDirectories.sort((a, b) -> b.length() - a.length());  // Сортируем директории по убыванию глубины
@@ -46,6 +46,7 @@ public class TreeBuilder {
                 Path filePath = Paths.get(file.getPath());
                 String fileName = filePath.getFileName().toString();
                 treeContent.append("blob ").append(file.getHash()).append(" ").append(fileName).append("\n");
+                allHashes.put(filePath.toString().replace("\\", "/"), file.getHash());
                 System.out.println("tree Content: " + treeContent);
             }
 
@@ -76,14 +77,17 @@ public class TreeBuilder {
                     parentTreeContent += "tree " + treeHash + " " + dirName + "\n";
                     String updatedParentTreeHash = SHA1.apply(parentTreeContent.getBytes());
                     directoryHashes.put(parentDir, updatedParentTreeHash);
-
+                    allHashes.put(parentDir.replace("\\", "/"), updatedParentTreeHash);
                     // Сохраняем обновленное дерево
                     saveTree(updatedParentTreeHash, parentTreeContent, objectsPath);
                 }
             }
         }
         System.out.println("DIR GASH: " + directoryHashes);
-        return directoryHashes;
+        Map<String, Map<String, String>> response = new HashMap<>();
+        response.put("dir-hashes", directoryHashes);
+        response.put("all-hashes", allHashes);
+        return response;
     }
 
     private static void saveTree(String treeHash, String treeContent, Path objectsPath) throws IOException {

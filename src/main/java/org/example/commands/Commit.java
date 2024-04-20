@@ -65,16 +65,17 @@ public class Commit extends AbstractCommand {
 
         }
 
-
-        Map<String, String> trees = TreeBuilder.buildTrees(entries, objectsPath);
-        List<String> filesHashes = new ArrayList<>();
-
-        for (Map.Entry<String, String> entry : trees.entrySet()){
-            String objectHash = entry.getValue();
+        Map<String, Map<String, String>> buildResultTree = TreeBuilder.buildTrees(entries, objectsPath);
+        Map<String, String> trees = buildResultTree.get("dir-hashes");
+        Map<String, String> filesHashes = buildResultTree.get("all-hashes");
+        System.out.println(filesHashes.keySet());
+//        for (Map.Entry<String, String> entry : trees.entrySet()){
+//            System.out.println("ENT: " + entry);
+//            String objectHash = entry.getValue();
 //            for(String line : Files.readAllLines(Paths.get(Constants.OBJECTS_DIR + objectHash.substring(0, 2) + "/" + objectHash.substring(2)))){
-//                filesHashes.put(line.split(" ")[1]);
+//                filesHashes.put(line.split(" ")[0], line.split(" ")[1]);
 //            }
-        }
+//        }
 //        System.out.println(trees);
 
         String rootTreeHash = trees.get("");
@@ -132,7 +133,7 @@ public class Commit extends AbstractCommand {
                 commitHash,
                 rootTreeHash,
                 ojbParentCommits,
-                trees,
+                filesHashes,
                 commitMessage,
                 commitDate,
                 Config.getUsername()
@@ -150,6 +151,7 @@ public class Commit extends AbstractCommand {
         }else{
             commits = new HashMap<>();
             commits.put(commitHash, newCommit);
+            System.out.println(commits);
             SerializationUtil.serialize(commits, Constants.COMMITS);
 
         }
