@@ -61,6 +61,10 @@ public class Main {
                     Command diff = new Diff();
                     diff.execute(args);
                     break;
+                case "merge":
+                    Command merge = new Merge();
+                    merge.execute(args);
+                    break;
                 default:
                     System.out.println("Неизвестная команда " + command);
                     break;

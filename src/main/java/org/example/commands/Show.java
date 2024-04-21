@@ -71,8 +71,12 @@ public class Show extends AbstractCommand{
 
         commits = SerializationUtil.deserialize(Constants.COMMITS);
 
+        System.out.println(commits);
+
 
         assert commits != null;
+
+
         for (CommitEntity commit : commits.values()){
             if (commit.getCommitHash().equals(hash)){
                 System.out.println("Commit: " + commit.getCommitHash());

@@ -71,6 +71,7 @@ public class Commit extends AbstractCommand {
         Map<String, String> blobHashes = buildResultTree.get("blob-hashes");
         Map<String, String> allHashes = new HashMap<>();
         allHashes.putAll(trees);
+        allHashes.putAll(blobHashes);
 
 //                System.out.println(filesHashes.keySet());
 //        for (Map.Entry<String, String> entry : trees.entrySet()){

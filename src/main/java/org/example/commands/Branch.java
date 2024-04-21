@@ -43,7 +43,7 @@ public class Branch extends AbstractCommand {
         }
     }
 
-    private static void createBranch(String branchName) {
+    public static void createBranch(String branchName) {
         File branchFile = new File(Constants.REFS_HEADS + branchName);
         if (branchFile.exists()) {
             System.out.println("Ветка " + branchName + " уже существует.");
@@ -125,7 +125,7 @@ public class Branch extends AbstractCommand {
         return Objects.requireNonNull(getCurrentBranchPath()).split("/")[3];
     }
 
-    private static String getCurrentCommit(){
+    public static String getCurrentCommit(){
         try{
             return new String(Files.readAllBytes(Paths.get(Objects.requireNonNull(getCurrentBranchPath()))));
         } catch (IOException e) {

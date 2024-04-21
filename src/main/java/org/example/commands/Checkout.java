@@ -1,33 +1,55 @@
 package org.example.commands;
 
-import org.example.utils.CheckoutPossibility;
-import org.example.utils.Constants;
-import org.example.utils.RecursiveSearch;
+import org.example.utils.*;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 
 public class Checkout extends AbstractCommand{
 
+    private Map<String, Boolean> options = new HashMap<>();
+
     public Checkout() {
         super("checkout", "Does checkouts");
+        this.options.put("-b", false);
+        this.options.put("-f", false);
+
     }
 
     @Override
     public void execute(String[] commandArgument) throws IOException {
-        if (!CheckoutPossibility.allCommited()) {
+        Map<Boolean, Map<String, Object>> parsedData = FlagParser.parseFlags(options, commandArgument);
+        Boolean key = parsedData.keySet().iterator().next();
+
+        System.out.println(parsedData);
+        if (!key) {
+            System.out.println("Некорректное использование команды checkout");
+        }
+        Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
+        ArrayList<String> args = (ArrayList<String>) parsedData.get(key).get("args");
+
+
+        System.out.println(args.size());
+
+
+        if (!CheckoutPossibility.allCommited() && !flagsMap.containsKey("-f")) {
             System.out.println("Есть незакоммиченые изменения, слейте все, потом делайте чекаут");
-        } else if (commandArgument.length == 2) {
-            String branchName = commandArgument[1];
+            return;
+        } if (flagsMap.containsKey("-b")) {
+            Branch.createBranch(args.get(0));
+            checkoutBranch(args.get(0));
+        } else if (args.size() == 1) {
+            String branchName = args.get(0);
             checkoutBranch(branchName);
+            restoreIndex(branchName);
         } else {
             System.out.println("Использование: checkout <имя_ветки>");
         }
+
     }
 
     private static String dirName(String hash){
@@ -81,8 +103,7 @@ public class Checkout extends AbstractCommand{
 
     private static void restoreWorkingDir(Path root, File start) throws IOException {
         File base = new File(String.valueOf(start));
-        File currentFile = Objects.requireNonNull(base.listFiles())[0];
-        List<String> lines = readLinesFromFile(currentFile.getPath());
+        List<String> lines = readLinesFromFile(base.getPath());
 
         for (String line : lines) {
             String[] parts = line.split(" ");
@@ -93,21 +114,71 @@ public class Checkout extends AbstractCommand{
 
             if (type.equals("tree")) {
                 Files.createDirectory(newPath);
-                File subDir = new File(Constants.OBJECTS_DIR + dirName(hash));
+                File subDir = new File(Constants.OBJECTS_DIR + dirName(hash) + "/" + hash.substring(2));
                 restoreWorkingDir(newPath, subDir);
             } else if (type.equals("blob")) {
                 File newNode = Files.createFile(newPath).toFile();
                 base = new File(Constants.OBJECTS_DIR + dirName(hash));
-                currentFile = Objects.requireNonNull(base.listFiles())[0];
-                copyFiles(currentFile, newNode);
+                base = Objects.requireNonNull(base.listFiles())[0];
+                copyFiles(base, newNode);
             }
         }
+    }
+
+    private static void restoreIndex(String branchName) throws IOException {
+        Map<String, CommitEntity> commits;
+
+        commits = SerializationUtil.deserialize(Constants.COMMITS);
+
+        String latestCommit = Objects.requireNonNull(ReadFile.readFile(Paths.get(Constants.REFS_HEADS + branchName))).get(0);
+
+        assert commits != null;
+        CommitEntity lastBranchCommit = commits.get(latestCommit);
+
+        Map<String, String> fileHashes = lastBranchCommit.getFilesHashes();
+
+        File index = new File(Constants.INDEX_FILE);
+        Files.writeString(index.toPath(), "");
+
+
+        try (FileWriter writer = new FileWriter(index)) {
+            for (Map.Entry<String, String> entry : fileHashes.entrySet()) {
+                String filePath = entry.getKey().replace("/", "\\");
+                String fileHash = entry.getValue();
+
+                System.out.println("[" + filePath + " " + fileHash + "]");
+
+                Path originalFile = Paths.get(RecursiveSearch.findRepositoryRoot(Paths.get(".")) + "/" + filePath);
+
+                BasicFileAttributes data = Files.readAttributes(originalFile, BasicFileAttributes.class);
+
+                if (!filePath.isEmpty() && !Files.isDirectory(originalFile)) {
+                    writer.write(formatIndexEntry(filePath, fileHash, data));
+                    //writer.write(System.lineSeparator());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Ошибка при записи index файла");
+            e.printStackTrace();
+        }
+    }
+
+    private static String formatIndexEntry(String filePath, String hashCode, BasicFileAttributes fileData) {
+        return String.format("%s %s %d %d%s",
+                filePath,
+                hashCode,
+                fileData.lastModifiedTime().toMillis(),
+                fileData.size(),
+                System.lineSeparator());
     }
 
     private static void checkoutBranch(String branchName) {
         File branchFile = new File(Constants.REFS_HEADS + branchName);
         if (!branchFile.exists()) {
             System.out.println("Ветка " + branchName + " не существует.");
+            return;
+        } else if (branchName.equals(Branch.getCurrentBranchName())){
+            System.out.println("Вы и так в этой ветке");
             return;
         }
 
@@ -126,9 +197,9 @@ public class Checkout extends AbstractCommand{
             File treeFile = Objects.requireNonNull(treeDir.listFiles())[0];
             String treeRootHash = readLinesFromFile(treeFile.getPath()).get(0).split(" ")[1];
 
-            File startMainDir = new File(Constants.OBJECTS_DIR + dirName(treeRootHash));
+            File startMainFile = new File(Constants.OBJECTS_DIR + dirName(treeRootHash) + "/" + treeRootHash.substring(2));
 
-            System.out.println(startMainDir);
+            System.out.println(startMainFile);
             Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
 
             assert repositoryRoot != null;
@@ -136,7 +207,7 @@ public class Checkout extends AbstractCommand{
 
             System.out.println(repositoryRoot);
 
-            restoreWorkingDir(repositoryRoot, startMainDir);
+            restoreWorkingDir(repositoryRoot, startMainFile);
 
             System.out.println("Переключено на ветку " + branchName);
         } catch (IOException e) {
