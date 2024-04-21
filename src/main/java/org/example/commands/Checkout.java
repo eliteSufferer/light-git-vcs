@@ -45,7 +45,8 @@ public class Checkout extends AbstractCommand{
         } else if (args.size() == 1) {
             String branchName = args.get(0);
             checkoutBranch(branchName);
-            restoreIndex(branchName);
+            String latestCommit = Objects.requireNonNull(ReadFile.readFile(Paths.get(Constants.REFS_HEADS + branchName))).get(0);
+            RestoreIndex.restoreIndex(latestCommit);
         } else {
             System.out.println("Использование: checkout <имя_ветки>");
         }
@@ -101,7 +102,7 @@ public class Checkout extends AbstractCommand{
         }
     }
 
-    private static void restoreWorkingDir(Path root, File start) throws IOException {
+    public static void restoreWorkingDir(Path root, File start) throws IOException {
         File base = new File(String.valueOf(start));
         List<String> lines = readLinesFromFile(base.getPath());
 
@@ -125,52 +126,6 @@ public class Checkout extends AbstractCommand{
         }
     }
 
-    private static void restoreIndex(String branchName) throws IOException {
-        Map<String, CommitEntity> commits;
-
-        commits = SerializationUtil.deserialize(Constants.COMMITS);
-
-        String latestCommit = Objects.requireNonNull(ReadFile.readFile(Paths.get(Constants.REFS_HEADS + branchName))).get(0);
-
-        assert commits != null;
-        CommitEntity lastBranchCommit = commits.get(latestCommit);
-
-        Map<String, String> fileHashes = lastBranchCommit.getFilesHashes();
-
-        File index = new File(Constants.INDEX_FILE);
-        Files.writeString(index.toPath(), "");
-
-
-        try (FileWriter writer = new FileWriter(index)) {
-            for (Map.Entry<String, String> entry : fileHashes.entrySet()) {
-                String filePath = entry.getKey().replace("/", "\\");
-                String fileHash = entry.getValue();
-
-                System.out.println("[" + filePath + " " + fileHash + "]");
-
-                Path originalFile = Paths.get(RecursiveSearch.findRepositoryRoot(Paths.get(".")) + "/" + filePath);
-
-                BasicFileAttributes data = Files.readAttributes(originalFile, BasicFileAttributes.class);
-
-                if (!filePath.isEmpty() && !Files.isDirectory(originalFile)) {
-                    writer.write(formatIndexEntry(filePath, fileHash, data));
-                    //writer.write(System.lineSeparator());
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Ошибка при записи index файла");
-            e.printStackTrace();
-        }
-    }
-
-    private static String formatIndexEntry(String filePath, String hashCode, BasicFileAttributes fileData) {
-        return String.format("%s %s %d %d%s",
-                filePath,
-                hashCode,
-                fileData.lastModifiedTime().toMillis(),
-                fileData.size(),
-                System.lineSeparator());
-    }
 
     private static void checkoutBranch(String branchName) {
         File branchFile = new File(Constants.REFS_HEADS + branchName);

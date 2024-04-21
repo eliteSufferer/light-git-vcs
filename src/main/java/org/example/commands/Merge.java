@@ -53,6 +53,7 @@ public class Merge extends AbstractCommand{
         }
     }
 
+    //TODO: допилить до ума
     private static Map<String, String> mergeFiles(Map<String, CommitEntity> commits, String commonAncestor, String sourceCommit, String latestCommit){
         Map<String, String> mergedFiles = new HashMap<>();
 
