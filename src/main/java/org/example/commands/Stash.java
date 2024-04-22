@@ -3,6 +3,7 @@ package org.example.commands;
 import org.example.utils.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,14 +12,42 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Stash extends AbstractCommand {
+    private Map<String, Boolean> options = new HashMap<>();
     public Stash() {
         super("stash", "stash ");
     }
 
     @Override
     public void execute(String[] commandArgument) throws IOException {
+        Map<Boolean, Map<String, Object>> parsedData = FlagParser.parseFlags(options, commandArgument);
+        Boolean key = parsedData.keySet().iterator().next();
+        if (!key) {
+            System.out.println("Некорректное использование комманды commit");
+        }
+        Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
+        ArrayList<String> argPaths = (ArrayList<String>) parsedData.get(key).get("args");
 
         Path stashPath = Paths.get(Constants.STASH_DIR);
+
+
+
+        Stack<StashEntry> stack;
+        if (!argPaths.isEmpty()){
+            if (!Files.exists(stashPath)) {
+                System.out.println("stash - пуст");
+                return;
+            }else{
+                if (Objects.equals(argPaths.get(0), "apply")){
+                    applyStash(false);
+                } else if (Objects.equals(argPaths.get(0), "pop")) {
+                    applyStash(true);
+                }
+
+                return;
+            }
+        }
+
+
         if (!Files.exists(stashPath)) {
             Files.createDirectory(stashPath);
             Files.createFile(Paths.get(Constants.STASH_FILE));
@@ -44,7 +73,8 @@ public class Stash extends AbstractCommand {
         );
 
 
-        Stack<StashEntry> stack;
+
+
         if (!Commit.isFileEmpty(Paths.get(Constants.STASH_FILE))) {
             stack = SerializationUtil.deserialize(Constants.STASH_FILE);
 //            System.out.println("CUM: " + stack.toString());
@@ -52,7 +82,7 @@ public class Stash extends AbstractCommand {
                 stack = new Stack<>();
             }
             stack.push(stashEntry);
-            SerializationUtil.serialize(stashEntry, Constants.STASH_FILE);
+            SerializationUtil.serialize(stack, Constants.STASH_FILE);
         }else{
             stack = new Stack<>();
             stack.push(stashEntry);
@@ -62,9 +92,54 @@ public class Stash extends AbstractCommand {
 
         clearIndexedFilesFromWorkingDirectory(indexEntries, repositoryRoot);
         String currentCommitHash = Branch.getCurrentCommit();
-        Checkout.restoreWorkingDir();
+        Reset.resetWorkingDirectory(currentCommitHash);
+        RestoreIndex.restoreIndex(currentCommitHash);
 
 
+    }
+    public void applyStash(boolean isPop) throws IOException {
+        Path stashFilePath = Paths.get(Constants.STASH_FILE);
+        if (Files.exists(stashFilePath) && !Commit.isFileEmpty(stashFilePath)) {
+            Stack<StashEntry> stashStack = SerializationUtil.deserialize(Constants.STASH_FILE);
+            StashEntry lastStash;
+            if (!stashStack.isEmpty()) {
+                if (isPop){
+                    lastStash = stashStack.pop(); // Получаем последний StashEntry с удалением
+                }else{
+                 lastStash = stashStack.peek(); // Получаем последний StashEntry без удаления
+                }
+
+                restoreWorkingDirectory(lastStash.getSnapshotWorkingDirectory());
+                restoreIndex(lastStash.getSnapshotIndex());
+
+                System.out.println("Stash applied successfully.");
+            } else {
+                System.out.println("No stashes to apply.");
+            }
+        } else {
+            System.out.println("Stash file is empty or does not exist.");
+        }
+    }
+    private void restoreWorkingDirectory(Map<String, String> workingDirectorySnapshot) throws IOException {
+        Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
+        System.out.println(workingDirectorySnapshot);
+        for (Map.Entry<String, String> fileEntry : workingDirectorySnapshot.entrySet()) {
+            Path filePath = repositoryRoot.resolve(fileEntry.getKey());
+            System.out.println("File path: " + filePath);
+            if (!Files.exists(filePath.getParent())) {
+                Files.createDirectories(filePath.getParent()); // Создаем родительскую директорию, если она не существует
+            }
+            try {
+                Files.writeString(filePath, fileEntry.getValue(), StandardCharsets.UTF_8);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+    private void restoreIndex(String indexSnapshot) throws IOException {
+        Path indexPath = Paths.get(Constants.INDEX_FILE);
+        Files.writeString(indexPath, indexSnapshot, StandardCharsets.UTF_8);
     }
 
     public Map<String, String> createSnapshotOfWorkingDirectory(Map<String, String> indexEntries, List<Path> workingDirectoryFiles, Path repositoryRoot) throws IOException {
@@ -134,6 +209,8 @@ public class Stash extends AbstractCommand {
             return !dirStream.iterator().hasNext(); // Проверяем, есть ли в директории файлы
         }
     }
+
+
 
 
 }

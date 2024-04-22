@@ -59,7 +59,7 @@ public class Reset extends AbstractCommand{
         RestoreIndex.restoreIndex(commitHash);
     }
 
-    public void resetWorkingDirectory(String commitHash) throws IOException {
+    public static void resetWorkingDirectory(String commitHash) throws IOException {
         Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
         File rootTree = null;
         for(String line : Files.readAllLines(Paths.get(Constants.OBJECTS_DIR + commitHash.substring(0, 2) + "/" + commitHash.substring(2)))){
