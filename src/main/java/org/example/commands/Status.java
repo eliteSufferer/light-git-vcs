@@ -1,16 +1,14 @@
 package org.example.commands;
 
 import org.example.utils.Constants;
+import org.example.utils.RecursiveSearch;
 import org.example.utils.SHA1;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Status extends AbstractCommand {
@@ -21,10 +19,8 @@ public class Status extends AbstractCommand {
     @Override
     public void execute(String[] args) {
         try {
-            Path repositoryRoot = Paths.get(".").toAbsolutePath().normalize(); // Получаем корень репозитория
+            Path repositoryRoot = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize()); // Получаем корень репозитория
             Path indexPath = repositoryRoot.resolve(".gitler/index");
-
-            Path objectsPath = repositoryRoot.resolve(".gitler/objects");
             Map<String, String> indexEntries = new HashMap<>();
             if (Files.exists(indexPath)){
                 indexEntries = readIndexEntries(indexPath);
@@ -49,7 +45,7 @@ public class Status extends AbstractCommand {
         }
     }
 
-    private Map<String, String> readIndexEntries(Path indexPath) throws IOException {
+    public static Map<String, String> readIndexEntries(Path indexPath) throws IOException {
         return Files.readAllLines(indexPath).stream()
                 .collect(Collectors.toMap(
                         line -> line.split(" ")[0].replace("\\", "/"),
@@ -156,7 +152,7 @@ public class Status extends AbstractCommand {
 //            System.out.println("index ent: " + indexEntries);
 //            System.out.println("LCFP: " + lastCommitFilePath);
             if (!indexEntries.containsKey(lastCommitFilePath) && lastCommitFilePath != null) {
-                System.out.println("deleted: " + "\033[31m" + lastCommitFilePath + "\033[0m");
+                System.out.println("deleted: " + "\033[33m" + lastCommitFilePath + "\033[0m");
             }
         }
     }
@@ -199,14 +195,12 @@ public class Status extends AbstractCommand {
         for (Path file : workingDirectoryFiles) {
             if (Files.isRegularFile(file)) {
                 String relativePath = repositoryRoot.relativize(file).toString().replace("\\", "/");
-//                System.out.println(relativePath);
                 if (!indexEntries.containsKey(relativePath)) {
                     System.out.println("\33[31m" + relativePath + "\33[0m");
                 }
             }
         }
     }
-
 }
 
 

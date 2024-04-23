@@ -15,5 +15,12 @@ public class Constants {
     public static final String OBJECTS_INFO = OBJECTS_DIR + "info/";
     public static final String DESCRIPTION = VCS_DIR + "description/";
     public static final String PACK = OBJECTS_DIR + "pack/";
+    public static final String STASH_DIR = REFS_DIR + "stash/";
+    public static final String STASH_FILE = STASH_DIR + "stack";
+    public static final String MERGE_HEAD = VCS_DIR + "MERGE_HEAD";
+    public static final String ORIG_HEAD = VCS_DIR + "ORIG_HEAD";
+    public static final String COMMIT_EDITMSG = VCS_DIR + "COMMIT_EDITMSG";
+
+
     // Добавьте другие константы путей файлов по мере необходимости
 }

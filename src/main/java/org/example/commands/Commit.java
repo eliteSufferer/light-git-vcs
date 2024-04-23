@@ -30,6 +30,7 @@ public class Commit extends AbstractCommand {
         Boolean key = parsedData.keySet().iterator().next();
         if (!key) {
             System.out.println("Некорректное использование комманды commit");
+            return;
         }
         Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
         ArrayList<String> argPaths = (ArrayList<String>) parsedData.get(key).get("args");
@@ -117,8 +118,12 @@ public class Commit extends AbstractCommand {
                 }
 
             }
-            if (!isCommitWithUseAmend) {
-                commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage + "\nparent commit: " + parentCommit;
+            if (!isCommitWithUseAmend ) {
+                if (argPaths.isEmpty()){
+                    commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage + "\nparent commit: " + parentCommit;
+                }else{
+                    commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage + "\nparent commits: " + argPaths.get(0) + ", " + argPaths.get(1);
+                }
             }
 
 //            System.out.println(2);
@@ -142,7 +147,8 @@ public class Commit extends AbstractCommand {
                 commitMessage,
                 commitDate,
                 Config.getUsername(),
-                blobHashes
+                blobHashes,
+                Branch.getCurrentBranchName()
 
 
         );

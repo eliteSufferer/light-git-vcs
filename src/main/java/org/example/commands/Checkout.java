@@ -127,6 +127,7 @@ public class Checkout extends AbstractCommand{
     }
 
 
+
     private static void checkoutBranch(String branchName) {
         File branchFile = new File(Constants.REFS_HEADS + branchName);
         if (!branchFile.exists()) {

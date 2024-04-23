@@ -65,6 +65,30 @@ public class Main {
                     Command merge = new Merge();
                     merge.execute(args);
                     break;
+                case "rm":
+                    Command rm = new Rm();
+                    rm.execute(args);
+                    break;
+                case "reset":
+                    Command reset = new Reset();
+                    reset.execute(args);
+                    break;
+                case "log":
+                    Command log = new Log();
+                    log.execute(args);
+                    break;
+                case "stash":
+                    Command stash = new Stash();
+                    stash.execute(args);
+                    break;
+                case "cheery-pick":
+                    Command cheeryPick = new CherryPick();
+                    cheeryPick.execute(args);
+                    break;
+                case "revert":
+                    Command revert = new Revert();
+                    revert.execute(args);
+                    break;
                 default:
                     System.out.println("Неизвестная команда " + command);
                     break;

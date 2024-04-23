@@ -30,6 +30,7 @@ public class CommitEntity implements Serializable {
         return author;
     }
 
+    private String branchName;
     public void setAuthor(String author) {
         this.author = author;
     }
@@ -42,7 +43,8 @@ public class CommitEntity implements Serializable {
         this.blobs = blobs;
     }
 
-    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, Map<String, String> filesHashes, String message, Date timestamp, String author, Map<String, String> blobs) {
+    public CommitEntity(String commitHash, String treeHash, String parentCommitHash, Map<String, String> filesHashes, String message, Date timestamp, String author, Map<String, String> blobs, String branchName) {
+        this.branchName = branchName;
         this.commitHash = commitHash;
         this.treeHash = treeHash;
         this.parents = parentCommitHash;
@@ -51,10 +53,19 @@ public class CommitEntity implements Serializable {
         this.timestamp = timestamp;
         this.author = author;
         this.blobs = blobs;
+
     }
 
     public String getTreeHash() {
         return treeHash;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
     }
 
     public void setTreeHash(String treeHash) {

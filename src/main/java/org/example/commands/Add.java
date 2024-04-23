@@ -174,11 +174,11 @@ public class Add extends AbstractCommand {
         }
     }
 
-    private void removeFileFromIndex(Path filePath, Path repositoryRoot) throws IOException {
+    public static void removeFileFromIndex(Path filePath, Path repositoryRoot) throws IOException {
         Path indexPath = repositoryRoot.resolve(".gitler/index");
         List<String> lines = Files.readAllLines(indexPath);
         List<String> updatedLines = lines.stream()
-                .filter(line -> !line.startsWith(repositoryRoot.relativize(filePath).toString()))
+                .filter(line -> !line.startsWith(repositoryRoot.relativize(filePath.toAbsolutePath().normalize()).toString()))
                 .collect(Collectors.toList());
         Files.write(indexPath, updatedLines, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         System.out.println("Файл " + filePath.getFileName() + " удален из индекса.");
