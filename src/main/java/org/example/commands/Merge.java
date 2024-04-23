@@ -39,10 +39,13 @@ public class Merge extends AbstractCommand{
 
         System.out.println(mergedFiles);
 
+        boolean hasConflicts = false;
+
 
         for (String filePath : mergedFiles.keySet()) {
             try (FileWriter writer = new FileWriter(RecursiveSearch.findRepositoryRoot(Paths.get(".")) + "/" + filePath)) {
                 if (mergedFiles.get(filePath).contains("<<<<<<<")) {
+                    hasConflicts = true;
                     System.out.println("Конфликт слияния в файле: " + filePath + " Автоматическое слияние невозможно, решите конфликты вручную и сделайте коммит результата");
                 }
                 writer.write(mergedFiles.get(filePath));
@@ -50,6 +53,13 @@ public class Merge extends AbstractCommand{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        if (!hasConflicts){
+            Commit commit = new Commit();
+            commit.execute(new String[]{latestCommit, sourceCommit, "Merge with fixed conflicts"});
+
+
         }
     }
 
@@ -84,7 +94,6 @@ public class Merge extends AbstractCommand{
             if (!sourceFiles.containsKey(filePath)){
                 mergedFiles.put(filePath, targetFiles.get(filePath));
             }
-
 
         }
 

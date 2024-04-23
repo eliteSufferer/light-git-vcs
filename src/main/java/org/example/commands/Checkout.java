@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
+import static org.example.commands.Status.readIndexEntries;
+
 public class Checkout extends AbstractCommand{
 
     private Map<String, Boolean> options = new HashMap<>();
@@ -86,6 +88,7 @@ public class Checkout extends AbstractCommand{
             }
         }
     }
+
 
     public static void copyFiles(File source, File dist){
         try {
