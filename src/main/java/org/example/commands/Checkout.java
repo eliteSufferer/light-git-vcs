@@ -3,6 +3,7 @@ package org.example.commands;
 import org.example.utils.*;
 
 import java.io.*;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -166,11 +167,14 @@ public class Checkout extends AbstractCommand{
 
             System.out.println(repositoryRoot);
 
-            restoreWorkingDir(repositoryRoot, startMainFile);
+            //restoreWorkingDir(repositoryRoot, startMainFile);
+
+            Reset.resetWorkingDirectory(commitHash);
 
             System.out.println("Переключено на ветку " + branchName);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }

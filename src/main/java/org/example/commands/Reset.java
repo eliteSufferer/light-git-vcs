@@ -25,7 +25,7 @@ public class Reset extends AbstractCommand{
         Map<Boolean, Map<String, Object>> parsedData = FlagParser.parseFlags(options, commandArgument);
         Boolean key = parsedData.keySet().iterator().next();
         if (!key) {
-            System.out.println("Некорректное использование комманды add");
+            System.out.println("Некорректное использование комманды reset");
         }
         Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
         ArrayList<String> argPaths = (ArrayList<String>) parsedData.get(key).get("args");
@@ -124,7 +124,7 @@ public class Reset extends AbstractCommand{
         Checkout.restoreWorkingDir(repositoryPath, rootTree);
     }
 
-    private static void collectDirectoriesToDelete(Path directory, Path rootPath, Set<Path> directoriesToDelete) {
+    public static void collectDirectoriesToDelete(Path directory, Path rootPath, Set<Path> directoriesToDelete) {
         while (directory != null && !directory.equals(rootPath)) { // Исключаем корневую директорию
             if (directory.startsWith(rootPath)) {
                 directoriesToDelete.add(directory);

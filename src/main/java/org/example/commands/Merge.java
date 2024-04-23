@@ -57,8 +57,9 @@ public class Merge extends AbstractCommand{
 
         if (!hasConflicts){
             Commit commit = new Commit();
+            Add add = new Add();
+            add.execute(new String[]{"."});
             commit.execute(new String[]{latestCommit, sourceCommit, "Merge with fixed conflicts"});
-
 
         }
     }
