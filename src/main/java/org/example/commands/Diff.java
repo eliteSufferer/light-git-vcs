@@ -49,7 +49,7 @@ public class Diff extends AbstractCommand {
             if (!commandArguments.isEmpty()){
                 for (String fileName : commandArguments){
                     if (!Files.exists(Paths.get(fileName))){
-                        System.out.println("ambiguous argument '" + fileName + "': unknown revision or path not in the working tree.");
+                        System.out.println("wrong argument '" + fileName + "': unknown revision or path not in the working tree.");
                         return;
                     }
                 }
@@ -58,11 +58,12 @@ public class Diff extends AbstractCommand {
             return;
         } else if (commandArguments.size() == 2 && isCommit(commandArguments.get(0)) && isCommit(commandArguments.get(1))) {
             diffTwoCommits(commandArguments.get(0), commandArguments.get(1));
+            return;
         }
         if (!commandArguments.isEmpty()){
             for (String fileName : commandArguments){
                 if (!Files.exists(Paths.get(fileName))){
-                    System.out.println("ambiguous argument '" + fileName + "': unknown revision or path not in the working tree.");
+                    System.out.println("wrong argument '" + fileName + "': unknown revision or path not in the working tree.");
                     return;
                 }
             }

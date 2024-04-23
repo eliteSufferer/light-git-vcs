@@ -3,10 +3,7 @@ package org.example.commands;
 import org.example.utils.*;
 
 import java.io.*;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
@@ -117,19 +114,28 @@ public class Checkout extends AbstractCommand{
             String name = parts[2];
             Path newPath = Path.of(root + "/" + name);
 
+
             if (type.equals("tree")) {
-                Files.createDirectory(newPath);
+                try{
+                    Files.createDirectory(newPath);
+                } catch (FileAlreadyExistsException e){
+                    continue;
+                }
                 File subDir = new File(Constants.OBJECTS_DIR + dirName(hash) + "/" + hash.substring(2));
                 restoreWorkingDir(newPath, subDir);
             } else if (type.equals("blob")) {
-                File newNode = Files.createFile(newPath).toFile();
+                File newNode;
+                try {
+                    newNode = Files.createFile(newPath).toFile();
+                } catch (FileAlreadyExistsException e){
+                    newNode = new File(String.valueOf(newPath));
+                }
                 base = new File(Constants.OBJECTS_DIR + dirName(hash));
                 base = Objects.requireNonNull(base.listFiles())[0];
                 copyFiles(base, newNode);
             }
         }
     }
-
 
 
     private static void checkoutBranch(String branchName) {
