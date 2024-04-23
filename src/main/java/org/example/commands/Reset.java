@@ -30,20 +30,19 @@ public class Reset extends AbstractCommand{
         Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
         ArrayList<String> argPaths = (ArrayList<String>) parsedData.get(key).get("args");
         String commitHash = argPaths.get(0);
+        String headHash = Files.readString(Paths.get(Constants.REFS_HEADS + Branch.getCurrentBranchName()));
         if (flagsMap.containsKey("--soft")) {
-            String previousHEAD = updateHEAD(commitHash);
+            checkOrigHead(headHash);
             updateBranchCommit(commitHash);
-            checkOrigHead(previousHEAD);
         } else if (flagsMap.containsKey("--hard")) {
-            String previousHEAD = updateHEAD(commitHash);
+            checkOrigHead(headHash);
             updateBranchCommit(commitHash);
-            checkOrigHead(previousHEAD);
+
             resetIndex(commitHash);
             resetWorkingDirectory(commitHash);
         }else if(flagsMap.containsKey("--mixed") || flagsMap.isEmpty()){
-            String previousHEAD = updateHEAD(commitHash);
+            checkOrigHead(headHash);
             updateBranchCommit(commitHash);
-            checkOrigHead(previousHEAD);
             resetIndex(commitHash);
         }
 
