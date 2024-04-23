@@ -42,7 +42,7 @@ public class Revert extends AbstractCommand{
 
         ArrayList<String> argPaths = (ArrayList<String>) parsedData.get(true).get("args");
         Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
-
+        Files.createFile(Paths.get(Constants.COMMIT_EDITMSG));
         Files.writeString(Paths.get(Constants.COMMIT_EDITMSG), flagsMap.getOrDefault("-m", ""), StandardOpenOption.TRUNCATE_EXISTING);
 
 
