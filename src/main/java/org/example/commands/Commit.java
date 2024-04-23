@@ -113,6 +113,7 @@ public class Commit extends AbstractCommand {
                 if (argPaths.isEmpty()){
                     commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage + "\nparent commit: " + parentCommit;
                 }else{
+                    parentCommit = argPaths.get(0) + ", " + argPaths.get(1);
                     commitContent = "tree " + rootTreeHash + "\nAuthor: " + Config.getUsername() + "\nmessage " + commitMessage + "\nparent commits: " + argPaths.get(0) + ", " + argPaths.get(1);
                 }
             }
