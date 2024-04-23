@@ -51,6 +51,7 @@ public class Reset extends AbstractCommand{
 
     private void checkOrigHead(String previousHEAD) throws IOException {
         if (!Files.exists(Paths.get(Constants.ORIG_HEAD))){
+            Files.createFile(Paths.get(Constants.ORIG_HEAD));
             Files.writeString(Paths.get(Constants.ORIG_HEAD), previousHEAD, StandardOpenOption.TRUNCATE_EXISTING);
         }else{
             Files.writeString(Paths.get(Constants.ORIG_HEAD), previousHEAD);
@@ -79,10 +80,11 @@ public class Reset extends AbstractCommand{
         Map<String, String> filesInWorkingDirToRemove = Stash.createSnapshotOfWorkingDirectory(indexEntries, fullWorkDir, repositoryPath);
 
         Set<Path> directoriesToDelete = new TreeSet<>(Comparator.comparingInt(path -> -path.getNameCount()));
-
+        System.out.println();
         for (String filePath : filesInWorkingDirToRemove.keySet()) {
             Path fullFilePath = repositoryPath.resolve(filePath);
             try {
+
                 Files.deleteIfExists(fullFilePath);
                 System.out.println("Deleted file: " + fullFilePath);
                 // Добавление всех родительских директорий в список удаления
