@@ -30,7 +30,7 @@ public class Diff extends AbstractCommand {
         Path repositoryPath = RecursiveSearch.findRepositoryRoot(Paths.get(".")).toAbsolutePath().normalize();
         Boolean key = parsedData.keySet().iterator().next();
         if (!key) {
-            System.out.println("Некорректное использование комманды commit");
+            System.out.println("usage: gitler diff [--cached] [<args>]");
             return;
         }
         Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");

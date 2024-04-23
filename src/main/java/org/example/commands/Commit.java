@@ -29,7 +29,7 @@ public class Commit extends AbstractCommand {
         Map<Boolean, Map<String, Object>> parsedData = FlagParser.parseFlags(options, args);
         Boolean key = parsedData.keySet().iterator().next();
         if (!key) {
-            System.out.println("Некорректное использование комманды commit");
+            System.out.println("usage: gitler commit [-m | --message] [ --all | -a] [--amend]");
             return;
         }
         Map<String, String> flagsMap = (Map<String, String>) parsedData.get(key).get("flags");
@@ -44,7 +44,7 @@ public class Commit extends AbstractCommand {
 
 
         Map<String, String> indexEntries = CheckoutPossibility.readIndexEntries(indexPath);
-        System.out.println("inf enties: " + indexEntries);
+//        System.out.println("inf enties: " + indexEntries);
         List<Path> workingDirectoryFiles = Files.walk(repositoryPath)
                 .filter(Files::isRegularFile)
                 .collect(Collectors.toList());
@@ -55,13 +55,13 @@ public class Commit extends AbstractCommand {
             String[] stringArray = new String[entries.size() + 1];
             stringArray[0] = "add";
             for (int i = 0; i < entries.size(); i++) {
-                System.out.println("INDEX: " + entries.get(i) + "\n" + entries.get(i).getPath().toString());
+//                System.out.println("INDEX: " + entries.get(i) + "\n" + entries.get(i).getPath().toString());
                 stringArray[i + 1] = entries.get(i).getPath().toString();
             }
             command.execute(stringArray);
             entries = IndexParser.parseIndex(indexPath);
         } else if (CheckoutPossibility.checkForChangesToBeCommitted(indexEntries, repositoryPath)) {
-            System.out.println("Nothing to commit");
+//            System.out.println("Nothing to commit");
             return;
 
         }
@@ -74,15 +74,6 @@ public class Commit extends AbstractCommand {
         allHashes.putAll(trees);
         allHashes.putAll(blobHashes);
 
-//                System.out.println(filesHashes.keySet());
-//        for (Map.Entry<String, String> entry : trees.entrySet()){
-//            System.out.println("ENT: " + entry);
-//            String objectHash = entry.getValue();
-//            for(String line : Files.readAllLines(Paths.get(Constants.OBJECTS_DIR + objectHash.substring(0, 2) + "/" + objectHash.substring(2)))){
-//                filesHashes.put(line.split(" ")[0], line.split(" ")[1]);
-//            }
-//        }
-//        System.out.println(trees);
 
         String rootTreeHash = trees.get("");
 //        System.out.println(rootTreeHash);
@@ -108,7 +99,7 @@ public class Commit extends AbstractCommand {
                         }
                     }
                     if (line.startsWith("parent commit:")) {
-                        System.out.println("LINE :" + line);
+//                        System.out.println("LINE :" + line);
                         parentCommit = line.split(" ")[2];
                     }
                 }
@@ -156,7 +147,7 @@ public class Commit extends AbstractCommand {
         // Сериализация и десериализация коммитов
         if (!isFileEmpty(Paths.get(Constants.COMMITS))) {
             commits = SerializationUtil.deserialize(Constants.COMMITS);
-            System.out.println("CUM: " + commits.toString());
+//            System.out.println("CUM: " + commits.toString());
             if (commits == null) {
                 commits = new HashMap<>();
             }
@@ -165,7 +156,7 @@ public class Commit extends AbstractCommand {
         }else{
             commits = new HashMap<>();
             commits.put(commitHash, newCommit);
-            System.out.println(commits);
+//            System.out.println(commits);
             SerializationUtil.serialize(commits, Constants.COMMITS);
 
         }
@@ -187,7 +178,7 @@ public class Commit extends AbstractCommand {
             branch = branch.split(" ")[1];
         } // TODO: Можно сделать для Detached HEAD
         Files.writeString(repositoryPath.resolve(".gitler/" + branch), commitHash);
-        System.out.println("Commit created with hash: " + commitHash);
+        System.out.println("Commit created with hash: " + commitHash + "\n" + commitMessage + "\nprarent commit hash: " + parentCommit);
     }
 
     public static boolean isFileEmpty(Path filePath) {

@@ -1,6 +1,5 @@
 package org.example.commands;
 
-import org.example.utils.Constants;
 import org.example.utils.FlagParser;
 import org.example.utils.RecursiveSearch;
 import org.example.utils.SHA1;
@@ -29,7 +28,7 @@ public class Add extends AbstractCommand {
         Map<Boolean, Map<String, Object>> parsedData = FlagParser.parseFlags(options, args);
         Boolean key = parsedData.keySet().iterator().next();
         if (!key) {
-            System.out.println("Некорректное использование комманды add");
+            System.out.println("usage: git add [<args>]");
         }
 //        System.out.println(key);
 //        System.out.println(parsedData.keySet());
@@ -41,7 +40,7 @@ public class Add extends AbstractCommand {
         try {
             ignorePatterns = readIgnorePatterns(repositoryRoot);
         } catch (IOException e) {
-            System.err.println("Ошибка при чтении .gitlerignore: " + e.getMessage());
+            System.err.println("was faild while reading .gitlerignore: " + e.getMessage());
             return;
         }
 
@@ -54,13 +53,13 @@ public class Add extends AbstractCommand {
 
 
         if (args.length < 2) {
-            System.out.println("Нет файлов для добавления.");
+            System.out.println("usage: git add [<args>]");
             return;
         }
 
 
         if (repositoryRoot == null) {
-            System.out.println("Не найден корень репозитория .gitler.");
+            System.out.println("not initialized repository. Use: gitler init");
             return;
         }
 
@@ -74,7 +73,7 @@ public class Add extends AbstractCommand {
             Path filePath = Paths.get(argPaths.get(i)).toAbsolutePath().normalize();
             if (!Files.exists(filePath)) {
 
-                System.out.println("Файл или директория " + filePath + " не найдена.");
+                System.out.println("file or directory " + filePath + " not found.");
                 continue;
             }
             try (Stream<Path> paths = Files.walk(filePath, FileVisitOption.FOLLOW_LINKS)) {
@@ -95,10 +94,10 @@ public class Add extends AbstractCommand {
                     .filter(path -> !shouldIgnore(path, ignorePatterns, repositoryRoot))
                     .filter(path -> !path.startsWith(repositoryRoot.resolve(".gitler")))
                     .collect(Collectors.toSet());
-            System.out.println("ES: " + existingFiles);
+//            System.out.println("ES: " + existingFiles);
             // Получаем все пути из индекса
             Map<String, String> indexEntries = readIndexEntries(repositoryRoot.resolve(".gitler/index"));
-            System.out.println("INDEX entries:"  + indexEntries);
+//            System.out.println("INDEX entries:"  + indexEntries);
             Set<Path> indexedPaths = indexEntries.keySet().stream()
                     .map(pathStr -> repositoryRoot.resolve(pathStr))
                     .collect(Collectors.toSet());
@@ -107,9 +106,9 @@ public class Add extends AbstractCommand {
             existingFiles.forEach(file -> addFile(file, repositoryRoot));
 
             // Проверяем удаленные файлы
-            System.out.println("ppppp");
-            System.out.println(existingFiles);
-            System.out.println(indexedPaths);
+//            System.out.println("ppppp");
+//            System.out.println(existingFiles);
+//            System.out.println(indexedPaths);
             indexedPaths.stream()
                     .filter(path -> !existingFiles.contains(path))
                     .forEach(path -> {
@@ -129,10 +128,10 @@ public class Add extends AbstractCommand {
 
     private void addFile(Path filePath, Path repositoryRoot) {
         try {
-            System.out.println("filePath: " + filePath);
+//            System.out.println("filePath: " + filePath);
             if (!Files.exists(filePath)) {
                 removeFileFromIndex(filePath, repositoryRoot); // Удаление записи из индекса
-                System.out.println("Файл " + filePath.getFileName() + " удален и будет удален из индекса.");
+                System.out.println("file " + filePath.getFileName() + "deleted from index");
                 return;
             }
             byte[] fileContent = Files.readAllBytes(filePath);
@@ -149,12 +148,11 @@ public class Add extends AbstractCommand {
                 return;
             } else {
                 if (indexHash != null && indexHash.equals(currentHash)) {
-                    System.out.println("Файл " + filePath.getFileName() + " не изменился и не будет добавлен в индекс повторно.");
+//                    System.out.println("file " + filePath.getFileName() + " не изменился и не будет добавлен в индекс повторно.");
                     return;
                 }
             }
             List<String> lines = Files.readAllLines(Paths.get(indexPath.toUri()));
-//            System.out.println(repositoryRoot.relativize(filePath));
             List<String> changedIndex = lines.stream().filter(line -> !line.startsWith(repositoryRoot.relativize(filePath).toString())).toList();
             Files.write(indexPath, changedIndex);
 
@@ -166,7 +164,7 @@ public class Add extends AbstractCommand {
             Files.createDirectories(hashDir);
             Files.write(blobFile, fileContent);
             Files.writeString(indexPath, formatIndexEntry(filePath, repositoryRoot, currentHash, attrs), java.nio.file.StandardOpenOption.APPEND);
-            System.out.println("Файл " + filePath.getFileName() + " обновлен и добавлен в индекс.");
+            System.out.println("file " + filePath.getFileName() + " added to index");
 
         } catch (IOException e) {
             System.out.println("Ошибка при добавлении файла " + filePath + ": " + e.getMessage());
@@ -189,14 +187,11 @@ public class Add extends AbstractCommand {
         if (Files.exists(indexPath)) {
             List<String> lines = Files.readAllLines(indexPath);
             for (String line : lines) {
-//                System.out.println("LINE: " + line);
                 String[] parts = line.split(" ");
                 if (parts.length < 4) continue;
-                entries.put(parts[0], parts[1]); // path -> hash
-//                System.out.println(parts[0] + " " + parts[1]);
+                entries.put(parts[0], parts[1]);
             }
         }
-//        System.out.println(entries.entrySet());
         return entries;
     }
 
@@ -225,10 +220,10 @@ public class Add extends AbstractCommand {
         Path ignoreFilePath = repositoryRoot.resolve(".gitlerignore");
         if (Files.exists(ignoreFilePath)) {
             return Files.readAllLines(ignoreFilePath).stream()
-                    .filter(line -> !line.trim().isEmpty() && !line.startsWith("#")) // Игнорировать пустые строки и комментарии
+                    .filter(line -> !line.trim().isEmpty() && !line.startsWith("#"))
                     .collect(Collectors.toList());
         }
-        return new ArrayList<>(); // Возвращаем пустой список, если файл .gitlerignore не существует
+        return new ArrayList<>();
     }
 
 

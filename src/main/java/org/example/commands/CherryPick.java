@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class CherryPick extends AbstractCommand{
     private Map<String, Boolean> options = new HashMap<>();
@@ -26,7 +25,6 @@ public class CherryPick extends AbstractCommand{
         this.options.put("--abort", false);
         Command addObject = new Add();
         Command stash = new Stash();
-        Command commit = new Commit();
 
 
 
@@ -36,7 +34,7 @@ public class CherryPick extends AbstractCommand{
         Boolean key = parsedData.keySet().iterator().next();
         Path repositoryPath = RecursiveSearch.findRepositoryRoot(Paths.get(".").toAbsolutePath().normalize());
         if (!key) {
-            System.out.println("Некорректное использование комманды cheery-pick");
+            System.out.println("usage: gitler cherry-pick [<flags>][<args>]");
             return;
         }
 
@@ -55,7 +53,7 @@ public class CherryPick extends AbstractCommand{
                 filePaths.remove(0);
 
                 String[] addArgs = new String[filePaths.size() + 1];
-                addArgs[0] = "add"; // команда
+                addArgs[0] = "add";
                 for (int i = 0; i < filePaths.size(); i++) {
                     addArgs[i + 1] = filePaths.get(i); // добавляем пути файлов
                 }
@@ -85,7 +83,7 @@ public class CherryPick extends AbstractCommand{
             stashArgs = new String[]{"stash", "apply"};
             stash.execute(stashArgs);
         }else{
-            System.out.println("Разрешите все конфликты или используется флаг --abort");
+            System.out.println("resolve conflicts. Also you can use: gitler cherry-pick --abort");
             return;
         }
         Files.writeString(Paths.get(Constants.MERGE_HEAD), argPaths.get(0));
@@ -104,7 +102,6 @@ public class CherryPick extends AbstractCommand{
 
         Map<Boolean, Map<String, Boolean>> conflicts = checkForConflicts(baseCommit, cherryPickCommit, workingDirectoryFiles, repositoryPath);
         boolean hasConflicts = conflicts.keySet().iterator().next();
-        //String filePath, List<String> baseContent, List<String> currentContent, List<String> cherryContent, Path repositoryRoot
         if (hasConflicts) {
             // Если есть конфликты, предоставляем пользователю возможность их решить
             for (String filePath : cherryPickCommit.getBlobs().keySet()) {
@@ -171,7 +168,7 @@ public class CherryPick extends AbstractCommand{
         try {
             commit.execute(addArgs);
         }catch (IOException e){
-            System.err.println("Ошибка при коммите в (CHEERY-PICK): " + e.getMessage());
+            System.err.println("ERROR WHILE CHEERY-PICKING: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -278,7 +275,7 @@ public class CherryPick extends AbstractCommand{
                 if (inConflict) {
                     mergedContent.add("=======");
                     mergedContent.addAll(cherryContent.subList(Math.max(0, i - 1), i));
-                    mergedContent.add(">>>>>>> REVERT");
+                    mergedContent.add(">>>>>>> CHERRY-PICK");
                     inConflict = false;
                 }
                 mergedContent.add(baseLine);
@@ -289,7 +286,7 @@ public class CherryPick extends AbstractCommand{
         if (inConflict) {
             mergedContent.add("=======");
             mergedContent.addAll(cherryContent.subList(Math.max(0, baseContent.size() - 1), cherryContent.size()));
-            mergedContent.add(">>>>>>> REVERT");
+            mergedContent.add(">>>>>>> CHERRY-PICK");
         }
 
         Files.createDirectories(conflictFilePath.getParent()); // Убедимся, что родительская директория существует
