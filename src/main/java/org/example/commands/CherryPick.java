@@ -17,7 +17,7 @@ import java.util.*;
 public class CherryPick extends AbstractCommand{
     private Map<String, Boolean> options = new HashMap<>();
     public CherryPick(){
-        super("cheery-pick", "pick target commit and place to current branch");
+        super("cherry-pick", "pick target commit and place to current branch");
     }
     @Override
     public void execute(String[] commandArgument) throws IOException {
@@ -132,9 +132,11 @@ public class CherryPick extends AbstractCommand{
 
                 } else {
                     // Если конфликтов нет, перезаписываем файл содержимым из cherry-pick коммита
+                    System.out.println("fileToWrite");
                     Path fileToWrite = repositoryPath.resolve(filePath);
                     Files.createDirectories(fileToWrite.getParent());
                     String content = String.join("\n", Objects.requireNonNull(getFileContentByHash(cherryPickCommit.getBlobs().get(filePath))));
+                    Files.deleteIfExists(Paths.get(Constants.MERGE_HEAD));
                     Files.writeString(fileToWrite, content, StandardCharsets.UTF_8);
                     addObject.execute(addArgs);
                 }
@@ -145,6 +147,7 @@ public class CherryPick extends AbstractCommand{
             // Применяем изменения и создаём новый коммит
             applyChangesFromCommit(cherryPickCommit, repositoryPath, addObject);
             createCommitForCherryPick();
+            Files.deleteIfExists(Paths.get(Constants.MERGE_HEAD));
         }
     }
 

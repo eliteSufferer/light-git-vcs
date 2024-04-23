@@ -149,10 +149,12 @@ public class Stash extends AbstractCommand {
                 .filter(Files::isRegularFile)
                 .map(file -> repositoryRoot.relativize(file).toString().replace("\\", "/"))
                 .collect(Collectors.toSet());
-
+        System.out.println("paths in working dir: " + workingDirectoryPaths);
         // Проверка на модифицированные и удаленные файлы
+        System.out.println("---ENTRY---");
         for (Map.Entry<String, String> entry : indexEntries.entrySet()) {
             String indexedPath = entry.getKey();
+            System.out.println(entry.getKey()+ " " + entry.getValue());
 
             if (workingDirectoryPaths.contains(indexedPath)) {
                 try {

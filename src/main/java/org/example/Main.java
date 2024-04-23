@@ -81,7 +81,7 @@ public class Main {
                     Command stash = new Stash();
                     stash.execute(args);
                     break;
-                case "cheery-pick":
+                case "cherry-pick":
                     Command cheeryPick = new CherryPick();
                     cheeryPick.execute(args);
                     break;

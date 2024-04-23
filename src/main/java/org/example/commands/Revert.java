@@ -204,6 +204,7 @@ public class Revert extends AbstractCommand{
                 addObject.execute(addArgs);
             }
             createRevertCommit();
+            Files.deleteIfExists(Paths.get(Constants.MERGE_HEAD));
         }
     }
 

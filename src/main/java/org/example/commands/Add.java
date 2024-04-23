@@ -163,7 +163,7 @@ public class Add extends AbstractCommand {
 
             Files.createDirectories(hashDir);
             Files.write(blobFile, fileContent);
-            Files.writeString(indexPath, formatIndexEntry(filePath, repositoryRoot, currentHash, attrs), java.nio.file.StandardOpenOption.APPEND);
+            Files.writeString(indexPath, formatIndexEntry(filePath, repositoryRoot, currentHash, attrs), StandardOpenOption.APPEND);
             System.out.println("file " + filePath.getFileName() + " added to index");
 
         } catch (IOException e) {
